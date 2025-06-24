@@ -15,7 +15,7 @@ Run server accessible to Internet IPv4/IPv6, [Yggdrasil](https://yggdrasil-netwo
 ## Usage
 
 ``` bash
-nexy -p /path/to/public
+nexy -p /path/to/public_dir
 ```
 * by default, server starts on localhost; change it with the `--bind` option(s)
 
