@@ -28,19 +28,27 @@ pub struct Config {
     pub public: String,
 
     /// Absolute path to the `Access denied` template file
+    ///
+    /// * this template file can be in binary format (e.g. image)
     #[arg(long)]
     pub template_access_denied: Option<String>,
 
     /// Absolute path to the `Internal server error` template file
+    ///
+    /// * this template file can be in binary format (e.g. image)
     #[arg(long)]
     pub template_internal_server_error: Option<String>,
 
     /// Absolute path to the `Not found` template file
+    ///
+    /// * this template file can be in binary format (e.g. image)
     #[arg(long)]
     pub template_not_found: Option<String>,
 
     /// Absolute path to the `Welcome` template file.
-    /// Unlike `template_index`, this applies only to the `public` location
+    /// Unlike `template-index`, this applies only to the `public` location
+    ///
+    /// * this template file expects pattern and cannot be in binary format
     ///
     /// **Patterns**
     /// * `{list}` - entries list for the `public` directory
@@ -48,6 +56,8 @@ pub struct Config {
     pub template_welcome: Option<String>,
 
     /// Absolute path to the `Index` template file for each directory
+    ///
+    /// * this template file expects pattern and cannot be in binary format
     ///
     /// **Patterns**
     /// * `{list}` - entries list for the current directory

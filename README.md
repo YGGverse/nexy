@@ -42,19 +42,29 @@ nexy -p /path/to/public_dir
 --template-access-denied <TEMPLATE_ACCESS_DENIED>
         Absolute path to the `Access denied` template file
 
+        * this template file can be in binary format (e.g. image)
+
 --template-internal-server-error <TEMPLATE_INTERNAL_SERVER_ERROR>
         Absolute path to the `Internal server error` template file
+
+        * this template file can be in binary format (e.g. image)
 
 --template-not-found <TEMPLATE_NOT_FOUND>
         Absolute path to the `Not found` template file
 
+        * this template file can be in binary format (e.g. image)
+
 --template-welcome <TEMPLATE_WELCOME>
-        Absolute path to the `Welcome` template file. Unlike `template_index`, this applies only to the `public` location
+        Absolute path to the `Welcome` template file. Unlike `template-index`, this applies only to the `public` location
+
+        * this template file expects pattern and cannot be in binary format
 
         **Patterns** * `{list}` - entries list for the `public` directory
 
 --template-index <TEMPLATE_INDEX>
         Absolute path to the `Index` template file for each directory
+
+        * this template file expects pattern and cannot be in binary format
 
         **Patterns** * `{list}` - entries list for the current directory
 
