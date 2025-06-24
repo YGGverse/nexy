@@ -60,11 +60,11 @@ impl Connection {
     fn response(&mut self, response: Response) {
         let bytes = match response {
             Response::File(b) => b,
-            Response::Directory(b, is_root) => {
+            Response::Directory(s, is_root) => {
                 &if is_root {
-                    self.session.template.welcome(Some(&b))
+                    self.session.template.welcome(Some(&s))
                 } else {
-                    self.session.template.index(Some(&b))
+                    self.session.template.index(Some(&s))
                 }
             }
             Response::InternalServerError(e) => {
