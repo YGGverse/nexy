@@ -36,11 +36,27 @@ nexy -p /path/to/public_dir
 
         [default: ei]
 
--t, --template <TEMPLATE>
-        Absolute path to the template files directory
-
 -p, --public <PUBLIC>
         Absolute path to the public files directory
+
+--template-access-denied <TEMPLATE_ACCESS_DENIED>
+        Absolute path to the `Access denied` template file
+
+--template-internal-server-error <TEMPLATE_INTERNAL_SERVER_ERROR>
+        Absolute path to the `Internal server error` template file
+
+--template-not-found <TEMPLATE_NOT_FOUND>
+        Absolute path to the `Not found` template file
+
+--template-welcome <TEMPLATE_WELCOME>
+        Absolute path to the `Welcome` template file. Unlike `template_index`, this applies only to the `public` location
+
+        **Patterns** * `{list}` - entries list for the `public` directory
+
+--template-index <TEMPLATE_INDEX>
+        Absolute path to the `Index` template file for each directory
+
+        **Patterns** * `{list}` - entries list for the current directory
 
 -r, --read-chunk <READ_CHUNK>
         Optimize memory usage on reading large files or stream

@@ -7,5 +7,7 @@ pub enum Response<'a> {
     /// Includes reference to the original request
     NotFound(&'a str),
     /// Includes bytes array
-    Success(&'a [u8]),
+    File(&'a [u8]),
+    /// Includes bytes array + public root directory status
+    Directory(String, bool),
 }

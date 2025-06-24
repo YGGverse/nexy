@@ -8,8 +8,8 @@ pub struct Storage {
 }
 
 impl Storage {
-    pub fn init(path: &str, read_chunk: usize) -> Result<Self> {
-        let public_dir = PathBuf::from_str(path)?.canonicalize()?;
+    pub fn init(config: &crate::config::Config) -> Result<Self> {
+        let public_dir = PathBuf::from_str(&config.public)?.canonicalize()?;
         let t = fs::metadata(&public_dir)?;
         if !t.is_dir() {
             bail!("Storage destination is not directory!");
@@ -19,7 +19,7 @@ impl Storage {
         }
         Ok(Self {
             public_dir,
-            read_chunk,
+            read_chunk: config.read_chunk,
         })
     }
 
@@ -41,7 +41,7 @@ impl Storage {
         match fs::metadata(&p) {
             Ok(t) => match (t.is_dir(), t.is_file()) {
                 (true, _) => callback(match self.list(&p) {
-                    Ok(ref l) => Response::Success(l.as_bytes()),
+                    Ok(l) => Response::Directory(l, p == self.public_dir),
                     Err(e) => Response::InternalServerError(e.to_string()),
                 }),
                 (_, true) => match fs::File::open(p) {
@@ -49,7 +49,7 @@ impl Storage {
                         let mut b = vec![0; self.read_chunk];
                         match f.read(&mut b) {
                             Ok(0) => break,
-                            Ok(n) => callback(Response::Success(&b[..n])),
+                            Ok(n) => callback(Response::File(&b[..n])),
                             Err(e) => {
                                 return callback(Response::InternalServerError(format!(
                                     "failed to read response chunk for `{query}`: `{e}`"

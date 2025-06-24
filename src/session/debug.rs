@@ -4,9 +4,9 @@ use level::Level;
 pub struct Debug(Vec<Level>);
 
 impl Debug {
-    pub fn init(levels: &str) -> anyhow::Result<Self> {
-        let mut l = Vec::with_capacity(levels.len());
-        for s in levels.to_lowercase().chars() {
+    pub fn init(config: &crate::config::Config) -> anyhow::Result<Self> {
+        let mut l = Vec::with_capacity(config.debug.len());
+        for s in config.debug.to_lowercase().chars() {
             l.push(Level::parse(s)?);
         }
         Ok(Self(l))

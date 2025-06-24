@@ -59,24 +59,31 @@ impl Connection {
 
     fn response(&mut self, response: Response) {
         let bytes = match response {
-            Response::Success(b) => b,
+            Response::File(b) => b,
+            Response::Directory(b, is_root) => {
+                &if is_root {
+                    self.session.template.welcome(Some(&b))
+                } else {
+                    self.session.template.index(Some(&b))
+                }
+            }
             Response::InternalServerError(e) => {
                 self.session.debug.error(&e);
-                self.session.template.internal_server_error.as_bytes()
+                self.session.template.internal_server_error()
             }
             Response::AccessDenied(q) => {
                 self.session.debug.error(&format!(
                     "[{}] < [{}] access to `{q}` denied.",
                     self.address.server, self.address.client
                 ));
-                self.session.template.access_denied.as_bytes()
+                self.session.template.access_denied()
             }
             Response::NotFound(q) => {
                 self.session.debug.error(&format!(
                     "[{}] < [{}] requested resource `{q}` not found.",
                     self.address.server, self.address.client
                 ));
-                self.session.template.not_found.as_bytes()
+                self.session.template.not_found()
             }
         };
         match self.stream.write_all(bytes) {

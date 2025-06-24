@@ -14,9 +14,9 @@ pub struct Session {
 impl Session {
     pub fn init(config: &crate::config::Config) -> anyhow::Result<Self> {
         Ok(Self {
-            debug: Debug::init(&config.debug)?,
-            storage: Storage::init(&config.public, config.read_chunk)?,
-            template: Template::init(&config.template)?,
+            debug: Debug::init(config)?,
+            storage: Storage::init(config)?,
+            template: Template::init(config)?,
         })
     }
 }
