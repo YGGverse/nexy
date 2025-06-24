@@ -4,7 +4,7 @@
 [![Dependencies](https://deps.rs/repo/github/yggverse/server/status.svg)](https://deps.rs/repo/github/yggverse/nexy)
 [![crates.io](https://img.shields.io/crates/v/nexy)](https://crates.io/crates/nexy)
 
-Run server accessible to Internet IPv4/IPv6, [Yggdrasil](https://yggdrasil-network.github.io/), [Mycelium](https://github.com/threefoldtech/mycelium), and other networks simultaneously, as many as desired.
+Run server accessible to Internet IPv4/IPv6, [Yggdrasil](https://yggdrasil-network.github.io/), [Mycelium](https://github.com/threefoldtech/mycelium), and other networks simultaneously, as many as desired. Optimized for streaming large files in chunks without memory load on reading.
 
 ## Install
 
