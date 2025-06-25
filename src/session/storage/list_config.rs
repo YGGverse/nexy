@@ -58,18 +58,18 @@ impl ListConfig {
             c <= 1
         }
         if !is_unique(&[
-            config.list_dir_sort_accessed,
-            config.list_dir_sort_created,
-            config.list_dir_sort_modified,
-            config.list_dir_sort_count,
+            config.list_dir_sort_by_accessed,
+            config.list_dir_sort_by_created,
+            config.list_dir_sort_by_modified,
+            config.list_dir_sort_by_count,
         ]) {
             bail!("Dir sort option should be unique!")
         }
         if !is_unique(&[
-            config.list_file_sort_accessed,
-            config.list_file_sort_created,
-            config.list_file_sort_modified,
-            config.list_file_sort_size,
+            config.list_file_sort_by_accessed,
+            config.list_file_sort_by_created,
+            config.list_file_sort_by_modified,
+            config.list_file_sort_by_size,
         ]) {
             bail!("File sort option should be unique!")
         }
@@ -77,39 +77,39 @@ impl ListConfig {
             dir: Dir {
                 alt: DirAlt {
                     time: Time {
-                        is_accessed: config.list_dir_accessed,
-                        is_created: config.list_dir_created,
-                        is_modified: config.list_dir_modified,
+                        is_accessed: config.list_dir_show_accessed,
+                        is_created: config.list_dir_show_created,
+                        is_modified: config.list_dir_show_modified,
                     },
-                    is_count: config.list_dir_count,
+                    is_count: config.list_dir_show_count,
                 },
                 is_reverse: config.list_dir_reverse,
                 sort: DirSort {
                     time: Time {
-                        is_accessed: config.list_dir_sort_accessed,
-                        is_created: config.list_dir_sort_created,
-                        is_modified: config.list_dir_sort_modified,
+                        is_accessed: config.list_dir_sort_by_accessed,
+                        is_created: config.list_dir_sort_by_created,
+                        is_modified: config.list_dir_sort_by_modified,
                     },
-                    is_count: config.list_dir_sort_count,
+                    is_count: config.list_dir_sort_by_count,
                 },
             },
             file: File {
                 alt: FileAlt {
                     time: Time {
-                        is_accessed: config.list_file_accessed,
-                        is_created: config.list_file_created,
-                        is_modified: config.list_file_modified,
+                        is_accessed: config.list_file_show_accessed,
+                        is_created: config.list_file_show_created,
+                        is_modified: config.list_file_show_modified,
                     },
-                    is_size: config.list_file_size,
+                    is_size: config.list_file_show_size,
                 },
                 is_reverse: config.list_file_reverse,
                 sort: FileSort {
                     time: Time {
-                        is_accessed: config.list_file_sort_accessed,
-                        is_created: config.list_file_sort_created,
-                        is_modified: config.list_file_sort_modified,
+                        is_accessed: config.list_file_sort_by_accessed,
+                        is_created: config.list_file_sort_by_created,
+                        is_modified: config.list_file_sort_by_modified,
                     },
-                    is_size: config.list_file_sort_size,
+                    is_size: config.list_file_sort_by_size,
                 },
             },
             time_format: config.list_time_format.clone(),

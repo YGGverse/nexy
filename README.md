@@ -77,55 +77,55 @@ nexy -p /path/to/public_dir
 
         **Patterns** * `{list}` - entries list for the current directory
 
---list-dir-count
+--list-dir-show-count
         Show files count in dir (as the alternative text for navigation links)
 
---list-dir-accessed
+--list-dir-show-accessed
         Show directory accessed time
 
---list-dir-created
+--list-dir-show-created
         Show directory created time
 
---list-dir-modified
+--list-dir-show-modified
         Show directory modified time
 
---list-dir-sort-accessed
+--list-dir-sort-by-accessed
         Sort dirs by time accessed (name by default)
 
---list-dir-sort-created
+--list-dir-sort-by-created
         Sort dirs by time created (name by default)
 
---list-dir-sort-modified
+--list-dir-sort-by-modified
         Sort dirs by time modified (name by default)
 
---list-dir-sort-count
+--list-dir-sort-by-count
         Sort dirs by count (name by default)
 
 --list-dir-reverse
         Sort directories in list DESC (ASC by default)
 
---list-file-size
+--list-file-show-size
         Show file size in list (as the alternative text for navigation links)
 
---list-file-accessed
+--list-file-show-accessed
         Show file accessed time
 
---list-file-created
+--list-file-show-created
         Show file created time
 
---list-file-modified
+--list-file-show-modified
         Show file modified time
 
---list-file-sort-accessed
+--list-file-sort-by-accessed
         Sort files by time accessed (name by default)
 
---list-file-sort-created
+--list-file-sort-by-created
         Sort files by time created (name by default)
 
---list-file-sort-modified
+--list-file-sort-by-modified
         Sort files by time modified (name by default)
 
---list-file-sort-size
+--list-file-sort-by-size
         Sort files by size (name by default)
 
 --list-file-reverse

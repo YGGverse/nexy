@@ -70,35 +70,35 @@ pub struct Config {
 
     /// Show files count in dir (as the alternative text for navigation links)
     #[arg(long, default_value_t = false)]
-    pub list_dir_count: bool,
+    pub list_dir_show_count: bool,
 
     /// Show directory accessed time
     #[arg(long, default_value_t = false)]
-    pub list_dir_accessed: bool,
+    pub list_dir_show_accessed: bool,
 
     /// Show directory created time
     #[arg(long, default_value_t = false)]
-    pub list_dir_created: bool,
+    pub list_dir_show_created: bool,
 
     /// Show directory modified time
     #[arg(long, default_value_t = false)]
-    pub list_dir_modified: bool,
+    pub list_dir_show_modified: bool,
 
     /// Sort dirs by time accessed (name by default)
     #[arg(long, default_value_t = false)]
-    pub list_dir_sort_accessed: bool,
+    pub list_dir_sort_by_accessed: bool,
 
     /// Sort dirs by time created (name by default)
     #[arg(long, default_value_t = false)]
-    pub list_dir_sort_created: bool,
+    pub list_dir_sort_by_created: bool,
 
     /// Sort dirs by time modified (name by default)
     #[arg(long, default_value_t = false)]
-    pub list_dir_sort_modified: bool,
+    pub list_dir_sort_by_modified: bool,
 
     /// Sort dirs by count (name by default)
     #[arg(long, default_value_t = false)]
-    pub list_dir_sort_count: bool,
+    pub list_dir_sort_by_count: bool,
 
     /// Sort directories in list DESC (ASC by default)
     #[arg(long, default_value_t = false)]
@@ -106,35 +106,35 @@ pub struct Config {
 
     /// Show file size in list (as the alternative text for navigation links)
     #[arg(long, default_value_t = false)]
-    pub list_file_size: bool,
+    pub list_file_show_size: bool,
 
     /// Show file accessed time
     #[arg(long, default_value_t = false)]
-    pub list_file_accessed: bool,
+    pub list_file_show_accessed: bool,
 
     /// Show file created time
     #[arg(long, default_value_t = false)]
-    pub list_file_created: bool,
+    pub list_file_show_created: bool,
 
     /// Show file modified time
     #[arg(long, default_value_t = false)]
-    pub list_file_modified: bool,
+    pub list_file_show_modified: bool,
 
     /// Sort files by time accessed (name by default)
     #[arg(long, default_value_t = false)]
-    pub list_file_sort_accessed: bool,
+    pub list_file_sort_by_accessed: bool,
 
     /// Sort files by time created (name by default)
     #[arg(long, default_value_t = false)]
-    pub list_file_sort_created: bool,
+    pub list_file_sort_by_created: bool,
 
     /// Sort files by time modified (name by default)
     #[arg(long, default_value_t = false)]
-    pub list_file_sort_modified: bool,
+    pub list_file_sort_by_modified: bool,
 
     /// Sort files by size (name by default)
     #[arg(long, default_value_t = false)]
-    pub list_file_sort_size: bool,
+    pub list_file_sort_by_size: bool,
 
     /// Sort files in list DESC (ASC by default)
     #[arg(long, default_value_t = false)]
