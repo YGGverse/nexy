@@ -77,6 +77,37 @@ nexy -p /path/to/public_dir
 
         **Patterns** * `{list}` - entries list for the current directory
 
+--list-dir-count
+        Show files count in dir (as the alternative text for navigation links)
+
+--list-dir-accessed
+        Show directory accessed time
+
+--list-dir-created
+        Show directory created time
+
+--list-dir-modified
+        Show directory modified time
+
+--list-file-size
+        Show file size in list (as the alternative text for navigation links)
+
+--list-file-accessed
+        Show file accessed time
+
+--list-file-created
+        Show file created time
+
+--list-file-modified
+        Show file modified time
+
+--list-time-format <LIST_TIME_FORMAT>
+        Time format for listing items
+
+        * use escape notation for `%` e.g. `"%%Y-%%m-%%d %%H:%%M:%%S"`
+
+        [default: "%Y-%m-%d %H:%M:%S"]
+
 -r, --read-chunk <READ_CHUNK>
         Optimize memory usage on reading large files or stream
 
