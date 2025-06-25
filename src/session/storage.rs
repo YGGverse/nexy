@@ -1,8 +1,17 @@
 use crate::response::Response;
 use anyhow::{Result, bail};
-use std::{fs, io::Read, path::PathBuf, str::FromStr};
+use std::{fs, io::Read, os::unix::fs::MetadataExt, path::PathBuf, str::FromStr};
 
 pub struct Storage {
+    list_dir_accessed: bool,
+    list_dir_count: bool,
+    list_dir_created: bool,
+    list_dir_modified: bool,
+    list_file_accessed: bool,
+    list_file_created: bool,
+    list_file_modified: bool,
+    list_file_size: bool,
+    list_time_format: String,
     public_dir: PathBuf,
     read_chunk: usize,
 }
@@ -18,6 +27,15 @@ impl Storage {
             bail!("Symlinks yet not supported!");
         }
         Ok(Self {
+            list_dir_accessed: config.list_dir_accessed,
+            list_dir_count: config.list_dir_count,
+            list_dir_created: config.list_dir_created,
+            list_dir_modified: config.list_dir_modified,
+            list_file_accessed: config.list_file_accessed,
+            list_file_created: config.list_file_created,
+            list_file_modified: config.list_file_modified,
+            list_file_size: config.list_file_size,
+            list_time_format: config.list_time_format.clone(),
             public_dir,
             read_chunk: config.read_chunk,
         })
@@ -75,34 +93,103 @@ impl Storage {
     /// * make sure the `path` is allowed before call this method!
     fn list(&self, path: &PathBuf) -> Result<String> {
         use urlencoding::encode;
+        /// Format bytes
+        fn b(v: u64) -> String {
+            const KB: f32 = 1024.0;
+            const MB: f32 = KB * KB;
+            const GB: f32 = MB * KB;
+            let f = v as f32;
+            if f < KB {
+                format!("{v} {}", "B")
+            } else if f < MB {
+                format!("{:.2} KB", f / KB)
+            } else if f < GB {
+                format!("{:.2} MB", f / MB)
+            } else {
+                format!("{:.2} GB", f / GB)
+            }
+        }
+
+        // separate dirs from files, to show the dirs first
         const C: usize = 25; // @TODO optional
         let mut d = Vec::with_capacity(C);
         let mut f = Vec::with_capacity(C);
         for entry in fs::read_dir(path)? {
             let e = entry?;
-            let t = fs::metadata(e.path())?;
-            match (t.is_dir(), t.is_file()) {
-                (true, _) => d.push(e.file_name()),
-                (_, true) => f.push(e.file_name()),
+            let m = fs::metadata(e.path())?;
+            match (m.is_dir(), m.is_file()) {
+                (true, _) => d.push((
+                    e.file_name().to_string_lossy().to_string(),
+                    m,
+                    fs::read_dir(e.path()).map_or(0, |i| i.count()),
+                )),
+                (_, true) => f.push((e.file_name().to_string_lossy().to_string(), m)),
                 _ => {} // @TODO symlinks support?
             }
         }
-        let mut l = Vec::with_capacity(d.len() + f.len());
+        // build resulting list
+        let mut r = Vec::with_capacity(d.len() + f.len());
+        // append top navigation (if not root)
         if &self.public_dir != path {
-            l.push("=> ../".to_string())
+            r.push("=> ../".to_string())
         }
-        d.sort();
-        for dir in d {
-            if let Some(s) = dir.to_str() {
-                l.push(format!("=> {}/", encode(s)))
-            }
+        // format dirs list
+        d.sort_by(|(a, _, _), (b, _, _)| a.cmp(b));
+        for (n, m, c) in d {
+            r.push({
+                let mut l = format!("=> {}/", encode(&n));
+                let mut a = Vec::new();
+                if self.list_dir_count {
+                    a.push(c.to_string());
+                }
+                if self.list_dir_accessed {
+                    a.push(self.t(m.atime()))
+                }
+                if self.list_dir_created {
+                    a.push(self.t(m.ctime()))
+                }
+                if self.list_dir_modified {
+                    a.push(self.t(m.mtime()))
+                }
+                // @TODO modified, accessed, created etc.
+                if !a.is_empty() {
+                    l.push_str(&format!(" ({})", a.join(",")));
+                }
+                l
+            })
         }
-        f.sort();
-        for file in f {
-            if let Some(s) = file.to_str() {
-                l.push(format!("=> {}", encode(s)))
-            }
+        // format files list
+        f.sort_by(|(a, _), (b, _)| a.cmp(b));
+        for (n, m) in f {
+            r.push({
+                let mut l = format!("=> {}", encode(&n));
+                let mut a = Vec::new();
+                if self.list_file_size {
+                    a.push(b(m.size()))
+                }
+                if self.list_file_accessed {
+                    a.push(self.t(m.atime()))
+                }
+                if self.list_file_created {
+                    a.push(self.t(m.ctime()))
+                }
+                if self.list_file_modified {
+                    a.push(self.t(m.mtime()))
+                }
+                if !a.is_empty() {
+                    l.push_str(&format!(" ({})", a.join(",")));
+                }
+                l
+            })
         }
-        Ok(l.join("\n"))
+        Ok(r.join("\n")) // @TODO cache option
+    }
+
+    /// Format time, according to the initiated settings
+    fn t(&self, u: i64) -> String {
+        chrono::DateTime::from_timestamp(u, 0)
+            .unwrap()
+            .format(&self.list_time_format)
+            .to_string()
     }
 }

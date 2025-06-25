@@ -68,6 +68,44 @@ pub struct Config {
     #[arg(long)]
     pub template_index: Option<String>,
 
+    /// Show files count in dir (as the alternative text for navigation links)
+    #[arg(long, default_value_t = false)]
+    pub list_dir_count: bool,
+
+    /// Show directory accessed time
+    #[arg(long, default_value_t = false)]
+    pub list_dir_accessed: bool,
+
+    /// Show directory created time
+    #[arg(long, default_value_t = false)]
+    pub list_dir_created: bool,
+
+    /// Show directory modified time
+    #[arg(long, default_value_t = false)]
+    pub list_dir_modified: bool,
+
+    /// Show file size in list (as the alternative text for navigation links)
+    #[arg(long, default_value_t = false)]
+    pub list_file_size: bool,
+
+    /// Show file accessed time
+    #[arg(long, default_value_t = false)]
+    pub list_file_accessed: bool,
+
+    /// Show file created time
+    #[arg(long, default_value_t = false)]
+    pub list_file_created: bool,
+
+    /// Show file modified time
+    #[arg(long, default_value_t = false)]
+    pub list_file_modified: bool,
+
+    /// Time format for listing items
+    ///
+    /// * use escape notation for `%` e.g. `"%%Y-%%m-%%d %%H:%%M:%%S"`
+    #[arg(long, default_value_t = String::from("%Y-%m-%d %H:%M:%S"))]
+    pub list_time_format: String,
+
     /// Optimize memory usage on reading large files or stream
     #[arg(short, long, default_value_t = 1024)]
     pub read_chunk: usize,
