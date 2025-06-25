@@ -3,7 +3,13 @@ mod list_config;
 use crate::response::Response;
 use anyhow::{Result, bail};
 use list_config::ListConfig;
-use std::{fs, io::Read, os::unix::fs::MetadataExt, path::PathBuf, str::FromStr};
+use std::{
+    fs::{self, Metadata},
+    io::Read,
+    os::unix::fs::MetadataExt,
+    path::PathBuf,
+    str::FromStr,
+};
 
 /// In-session disk storage API
 pub struct Storage {
@@ -100,47 +106,62 @@ impl Storage {
                 format!("{:.2} GB", f / GB)
             }
         }
-
+        /// Formatted directory entry
+        struct Dir {
+            /// Items quantity in this directory
+            count: usize,
+            meta: Metadata,
+            name: String,
+        }
+        /// Formatted file entry
+        struct File {
+            meta: Metadata,
+            name: String,
+        }
         // separate dirs from files, to show the dirs first
         const C: usize = 25; // @TODO optional
-        let mut d = Vec::with_capacity(C);
-        let mut f = Vec::with_capacity(C);
+        let mut dirs = Vec::with_capacity(C);
+        let mut files = Vec::with_capacity(C);
         for entry in fs::read_dir(path)? {
             let e = entry?;
-            let m = fs::metadata(e.path())?;
-            match (m.is_dir(), m.is_file()) {
-                (true, _) => d.push((
-                    e.file_name().to_string_lossy().to_string(),
-                    m,
-                    fs::read_dir(e.path()).map_or(0, |i| i.count()),
-                )),
-                (_, true) => f.push((e.file_name().to_string_lossy().to_string(), m)),
+            let meta = fs::metadata(e.path())?;
+            match (meta.is_dir(), meta.is_file()) {
+                (true, _) => dirs.push(Dir {
+                    meta,
+                    name: e.file_name().to_string_lossy().to_string(),
+                    count: fs::read_dir(e.path()).map_or(0, |i| i.count()),
+                }),
+                (_, true) => files.push(File {
+                    meta,
+                    name: e.file_name().to_string_lossy().to_string(),
+                }),
                 _ => {} // @TODO symlinks support?
             }
         }
         // build resulting list
-        let mut r = Vec::with_capacity(d.len() + f.len());
+        let mut r = Vec::with_capacity(dirs.len() + files.len());
         // append top navigation (if not root)
         if &self.public_dir != path {
             r.push("=> ../".to_string())
         }
         // format dirs list
-        d.sort_by(|(a, _, _), (b, _, _)| a.cmp(b));
-        for (n, m, c) in d {
+        dirs.sort_by(|a, b| a.name.cmp(&b.name));
+        for dir in dirs {
             r.push({
-                let mut l = format!("=> {}/", encode(&n));
+                let dc = &self.list_config.dir; // just short alias
+                let mut l = format!("=> {}/", encode(&dir.name));
                 let mut a = Vec::new();
-                if self.list_config.dir.is_count {
-                    a.push(c.to_string());
+                if dc.is_count {
+                    a.push(dir.count.to_string());
                 }
-                if self.list_config.dir.time.is_accessed {
-                    a.push(self.t(m.atime()))
+                if dc.time.is_accessed {
+                    a.push(self.t(dir.meta.atime()))
                 }
-                if self.list_config.dir.time.is_created {
-                    a.push(self.t(m.ctime()))
+                if dc.time.is_created {
+                    a.push(self.t(dir.meta.ctime()))
                 }
-                if self.list_config.dir.time.is_modified {
-                    a.push(self.t(m.mtime()))
+                if dc.time.is_modified {
+                    a.push(self.t(dir.meta.mtime()))
                 }
                 // @TODO modified, accessed, created etc.
                 if !a.is_empty() {
@@ -150,22 +171,23 @@ impl Storage {
             })
         }
         // format files list
-        f.sort_by(|(a, _), (b, _)| a.cmp(b));
-        for (n, m) in f {
+        files.sort_by(|a, b| a.name.cmp(&b.name));
+        for file in files {
             r.push({
-                let mut l = format!("=> {}", encode(&n));
+                let fc = &self.list_config.file; // just short alias
+                let mut l = format!("=> {}", encode(&file.name));
                 let mut a = Vec::new();
-                if self.list_config.file.is_size {
-                    a.push(b(m.size()))
+                if fc.is_size {
+                    a.push(b(file.meta.size()))
                 }
-                if self.list_config.file.time.is_accessed {
-                    a.push(self.t(m.atime()))
+                if fc.time.is_accessed {
+                    a.push(self.t(file.meta.atime()))
                 }
-                if self.list_config.file.time.is_created {
-                    a.push(self.t(m.ctime()))
+                if fc.time.is_created {
+                    a.push(self.t(file.meta.ctime()))
                 }
-                if self.list_config.file.time.is_modified {
-                    a.push(self.t(m.mtime()))
+                if fc.time.is_modified {
+                    a.push(self.t(file.meta.mtime()))
                 }
                 if !a.is_empty() {
                     l.push_str(&format!(" ({})", a.join(",")));
