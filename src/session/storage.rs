@@ -5,9 +5,13 @@ use anyhow::{Result, bail};
 use list::{Dir, File, List, Time};
 use std::{fs, io::Read, os::unix::fs::MetadataExt, path::PathBuf, str::FromStr};
 
+/// In-session disk storage API
 pub struct Storage {
+    /// Listing options
     list: List,
+    /// Root path to storage, used also for the access validation
     public_dir: PathBuf,
+    /// Streaming buffer options
     read_chunk: usize,
 }
 
