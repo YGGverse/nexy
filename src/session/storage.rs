@@ -1,17 +1,12 @@
+mod list;
+
 use crate::response::Response;
 use anyhow::{Result, bail};
+use list::{Dir, File, List, Time};
 use std::{fs, io::Read, os::unix::fs::MetadataExt, path::PathBuf, str::FromStr};
 
 pub struct Storage {
-    list_dir_accessed: bool,
-    list_dir_count: bool,
-    list_dir_created: bool,
-    list_dir_modified: bool,
-    list_file_accessed: bool,
-    list_file_created: bool,
-    list_file_modified: bool,
-    list_file_size: bool,
-    list_time_format: String,
+    list: List,
     public_dir: PathBuf,
     read_chunk: usize,
 }
@@ -27,15 +22,25 @@ impl Storage {
             bail!("Symlinks yet not supported!");
         }
         Ok(Self {
-            list_dir_accessed: config.list_dir_accessed,
-            list_dir_count: config.list_dir_count,
-            list_dir_created: config.list_dir_created,
-            list_dir_modified: config.list_dir_modified,
-            list_file_accessed: config.list_file_accessed,
-            list_file_created: config.list_file_created,
-            list_file_modified: config.list_file_modified,
-            list_file_size: config.list_file_size,
-            list_time_format: config.list_time_format.clone(),
+            list: List {
+                dir: Dir {
+                    time: Time {
+                        is_accessed: config.list_dir_accessed,
+                        is_created: config.list_dir_created,
+                        is_modified: config.list_dir_modified,
+                    },
+                    is_count: config.list_dir_count,
+                },
+                file: File {
+                    time: Time {
+                        is_accessed: config.list_file_accessed,
+                        is_created: config.list_file_created,
+                        is_modified: config.list_file_modified,
+                    },
+                    is_size: config.list_file_size,
+                },
+                time_format: config.list_time_format.clone(),
+            },
             public_dir,
             read_chunk: config.read_chunk,
         })
@@ -139,16 +144,16 @@ impl Storage {
             r.push({
                 let mut l = format!("=> {}/", encode(&n));
                 let mut a = Vec::new();
-                if self.list_dir_count {
+                if self.list.dir.is_count {
                     a.push(c.to_string());
                 }
-                if self.list_dir_accessed {
+                if self.list.dir.time.is_accessed {
                     a.push(self.t(m.atime()))
                 }
-                if self.list_dir_created {
+                if self.list.dir.time.is_created {
                     a.push(self.t(m.ctime()))
                 }
-                if self.list_dir_modified {
+                if self.list.dir.time.is_modified {
                     a.push(self.t(m.mtime()))
                 }
                 // @TODO modified, accessed, created etc.
@@ -164,16 +169,16 @@ impl Storage {
             r.push({
                 let mut l = format!("=> {}", encode(&n));
                 let mut a = Vec::new();
-                if self.list_file_size {
+                if self.list.file.is_size {
                     a.push(b(m.size()))
                 }
-                if self.list_file_accessed {
+                if self.list.file.time.is_accessed {
                     a.push(self.t(m.atime()))
                 }
-                if self.list_file_created {
+                if self.list.file.time.is_created {
                     a.push(self.t(m.ctime()))
                 }
-                if self.list_file_modified {
+                if self.list.file.time.is_modified {
                     a.push(self.t(m.mtime()))
                 }
                 if !a.is_empty() {
@@ -189,7 +194,7 @@ impl Storage {
     fn t(&self, u: i64) -> String {
         chrono::DateTime::from_timestamp(u, 0)
             .unwrap()
-            .format(&self.list_time_format)
+            .format(&self.list.time_format)
             .to_string()
     }
 }
