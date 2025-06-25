@@ -6,7 +6,6 @@ use list_config::ListConfig;
 use std::{
     fs::{self, Metadata},
     io::Read,
-    os::unix::fs::MetadataExt,
     path::PathBuf,
     str::FromStr,
 };
@@ -89,6 +88,7 @@ impl Storage {
     ///
     /// * make sure the `path` is allowed before call this method!
     fn list(&self, path: &PathBuf) -> Result<String> {
+        use std::os::unix::fs::MetadataExt; // @TODO
         use urlencoding::encode;
         /// Format bytes
         fn b(v: u64) -> String {
