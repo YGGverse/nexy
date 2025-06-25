@@ -43,14 +43,18 @@ impl Connection {
                     .clone()
                     .storage
                     .request(&q, |r| t += self.response(r)); // chunk loop
-                self.session.log.clf(&self.address.client, Some(&q), 0, t);
+                self.session
+                    .access_log
+                    .clf(&self.address.client, Some(&q), 0, t);
             }
             Err(e) => {
                 t += self.response(Response::InternalServerError(format!(
                     "[{}] < [{}] failed to handle incoming request: `{e}`",
                     self.address.server, self.address.client
                 )));
-                self.session.log.clf(&self.address.client, None, 1, t);
+                self.session
+                    .access_log
+                    .clf(&self.address.client, None, 1, t);
             }
         }
         self.shutdown()

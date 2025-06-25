@@ -5,9 +5,9 @@
 use std::{fs::File, io::Write, net::SocketAddr, sync::RwLock};
 
 /// Writes log as
-pub struct Log(Option<RwLock<File>>);
+pub struct AccessLog(Option<RwLock<File>>);
 
-impl Log {
+impl AccessLog {
     pub fn init(config: &crate::config::Config) -> anyhow::Result<Self> {
         Ok(Self(match config.access_log {
             Some(ref p) => Some(RwLock::new(File::create(p)?)),
