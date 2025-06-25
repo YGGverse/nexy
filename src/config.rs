@@ -7,6 +7,10 @@ const PORT: u16 = 1900;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 pub struct Config {
+    /// Absolute path to the access log file
+    #[arg(short, long)]
+    pub access_log: Option<String>,
+
     /// Bind server(s) `host:port` to listen incoming connections
     ///
     /// * use `[host]:port` notation for IPv6

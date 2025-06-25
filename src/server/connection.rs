@@ -32,6 +32,7 @@ impl Connection {
     }
 
     pub fn handle(mut self) {
+        let mut t = 0; // total bytes
         match self.request() {
             Ok(q) => {
                 self.session.debug.info(&format!(
@@ -41,12 +42,16 @@ impl Connection {
                 self.session
                     .clone()
                     .storage
-                    .request(&q, |r| self.response(r))
+                    .request(&q, |r| t += self.response(r)); // chunk loop
+                self.session.log.clf(&self.address.client, Some(&q), 0, t);
             }
-            Err(e) => self.response(Response::InternalServerError(format!(
-                "[{}] < [{}] failed to handle incoming request: `{e}`",
-                self.address.server, self.address.client
-            ))),
+            Err(e) => {
+                t += self.response(Response::InternalServerError(format!(
+                    "[{}] < [{}] failed to handle incoming request: `{e}`",
+                    self.address.server, self.address.client
+                )));
+                self.session.log.clf(&self.address.client, None, 1, t);
+            }
         }
         self.shutdown()
     }
@@ -57,7 +62,7 @@ impl Connection {
         Ok(urlencoding::decode(std::str::from_utf8(&b[..n])?.trim())?.to_string())
     }
 
-    fn response(&mut self, response: Response) {
+    fn response(&mut self, response: Response) -> usize {
         let bytes = match response {
             Response::File(b) => b,
             Response::Directory(ref s, is_root) => {
@@ -97,7 +102,8 @@ impl Connection {
                 "[{}] ! [{}] failed to response: `{e}`",
                 self.address.server, self.address.client,
             )),
-        }
+        };
+        bytes.len()
     }
 
     fn shutdown(self) {

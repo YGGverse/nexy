@@ -4,7 +4,12 @@
 [![Dependencies](https://deps.rs/repo/github/yggverse/nexy/status.svg)](https://deps.rs/repo/github/yggverse/nexy)
 [![crates.io](https://img.shields.io/crates/v/nexy)](https://crates.io/crates/nexy)
 
-Run server accessible to Internet IPv4/IPv6, [Yggdrasil](https://yggdrasil-network.github.io/), [Mycelium](https://github.com/threefoldtech/mycelium), and other networks simultaneously, as many as desired. Optimized for streaming large files (in chunks) without memory overload on reading.
+## Features
+
+* Run server accessible to Internet IPv4/IPv6, [Yggdrasil](https://yggdrasil-network.github.io/), [Mycelium](https://github.com/threefoldtech/mycelium), and other networks simultaneously, as many as desired
+* Optimized for streaming large files (in chunks) without memory overload on buffering the data
+* Supports the [CLF](https://en.wikipedia.org/wiki/Common_Log_Format) access log, which is compatible with analytics tools such as [GoAccess](https://goaccess.io/), [GoatCounter](https://www.goatcounter.com/) or just [htcount](https://github.com/yggverse/htcount)
+* See the [Options](#options) section for a complete list of other features.
 
 ## Install
 
@@ -22,6 +27,9 @@ nexy -p /path/to/public_dir
 ### Options
 
 ``` bash
+-a, --access-log <ACCESS_LOG>
+        Absolute path to the access log file
+
 -b, --bind <BIND>
         Bind server(s) `host:port` to listen incoming connections
 
