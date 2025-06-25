@@ -166,16 +166,16 @@ impl Storage {
             r.push({
                 let mut l = format!("=> {}/", encode(&dir.name)); // link
                 let mut a = Vec::new(); // alt
-                if dc.is_count {
+                if dc.alt.is_count {
                     a.push(dir.count.to_string());
                 }
-                if dc.time.is_accessed {
+                if dc.alt.time.is_accessed {
                     a.push(self.t(dir.meta.atime()))
                 }
-                if dc.time.is_created {
+                if dc.alt.time.is_created {
                     a.push(self.t(dir.meta.ctime()))
                 }
-                if dc.time.is_modified {
+                if dc.alt.time.is_modified {
                     a.push(self.t(dir.meta.mtime()))
                 }
                 // @TODO modified, accessed, created etc.
@@ -207,16 +207,16 @@ impl Storage {
             r.push({
                 let mut l = format!("=> {}", encode(&file.name)); // link
                 let mut a = Vec::new(); // alt
-                if fc.is_size {
+                if fc.alt.is_size {
                     a.push(b(file.meta.size()))
                 }
-                if fc.time.is_accessed {
+                if fc.alt.time.is_accessed {
                     a.push(self.t(file.meta.atime()))
                 }
-                if fc.time.is_created {
+                if fc.alt.time.is_created {
                     a.push(self.t(file.meta.ctime()))
                 }
-                if fc.time.is_modified {
+                if fc.alt.time.is_modified {
                     a.push(self.t(file.meta.mtime()))
                 }
                 if !a.is_empty() {
