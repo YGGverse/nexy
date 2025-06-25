@@ -1,14 +1,14 @@
-mod list;
+mod list_config;
 
 use crate::response::Response;
 use anyhow::{Result, bail};
-use list::{Dir, File, List, Time};
+use list_config::ListConfig;
 use std::{fs, io::Read, os::unix::fs::MetadataExt, path::PathBuf, str::FromStr};
 
 /// In-session disk storage API
 pub struct Storage {
     /// Listing options
-    list: List,
+    list_config: ListConfig,
     /// Root path to storage, used also for the access validation
     public_dir: PathBuf,
     /// Streaming buffer options
@@ -26,25 +26,7 @@ impl Storage {
             bail!("Symlinks yet not supported!");
         }
         Ok(Self {
-            list: List {
-                dir: Dir {
-                    time: Time {
-                        is_accessed: config.list_dir_accessed,
-                        is_created: config.list_dir_created,
-                        is_modified: config.list_dir_modified,
-                    },
-                    is_count: config.list_dir_count,
-                },
-                file: File {
-                    time: Time {
-                        is_accessed: config.list_file_accessed,
-                        is_created: config.list_file_created,
-                        is_modified: config.list_file_modified,
-                    },
-                    is_size: config.list_file_size,
-                },
-                time_format: config.list_time_format.clone(),
-            },
+            list_config: ListConfig::init(config),
             public_dir,
             read_chunk: config.read_chunk,
         })
@@ -148,16 +130,16 @@ impl Storage {
             r.push({
                 let mut l = format!("=> {}/", encode(&n));
                 let mut a = Vec::new();
-                if self.list.dir.is_count {
+                if self.list_config.dir.is_count {
                     a.push(c.to_string());
                 }
-                if self.list.dir.time.is_accessed {
+                if self.list_config.dir.time.is_accessed {
                     a.push(self.t(m.atime()))
                 }
-                if self.list.dir.time.is_created {
+                if self.list_config.dir.time.is_created {
                     a.push(self.t(m.ctime()))
                 }
-                if self.list.dir.time.is_modified {
+                if self.list_config.dir.time.is_modified {
                     a.push(self.t(m.mtime()))
                 }
                 // @TODO modified, accessed, created etc.
@@ -173,16 +155,16 @@ impl Storage {
             r.push({
                 let mut l = format!("=> {}", encode(&n));
                 let mut a = Vec::new();
-                if self.list.file.is_size {
+                if self.list_config.file.is_size {
                     a.push(b(m.size()))
                 }
-                if self.list.file.time.is_accessed {
+                if self.list_config.file.time.is_accessed {
                     a.push(self.t(m.atime()))
                 }
-                if self.list.file.time.is_created {
+                if self.list_config.file.time.is_created {
                     a.push(self.t(m.ctime()))
                 }
-                if self.list.file.time.is_modified {
+                if self.list_config.file.time.is_modified {
                     a.push(self.t(m.mtime()))
                 }
                 if !a.is_empty() {
@@ -198,7 +180,7 @@ impl Storage {
     fn t(&self, u: i64) -> String {
         chrono::DateTime::from_timestamp(u, 0)
             .unwrap()
-            .format(&self.list.time_format)
+            .format(&self.list_config.time_format)
             .to_string()
     }
 }
