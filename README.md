@@ -1,6 +1,6 @@
 # Nexy - Multi-network server for the [Nex protocol](https://nightfall.city/nex/info/specification.txt)
 
-![Build](https://github.com/yggverse/nexy/actions/workflows/build.yml/badge.svg)
+![Linux](https://github.com/yggverse/nexy/actions/workflows/linux.yml/badge.svg)
 [![Dependencies](https://deps.rs/repo/github/yggverse/nexy/status.svg)](https://deps.rs/repo/github/yggverse/nexy)
 [![crates.io](https://img.shields.io/crates/v/nexy)](https://crates.io/crates/nexy)
 
