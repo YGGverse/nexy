@@ -84,6 +84,22 @@ pub struct Config {
     #[arg(long, default_value_t = false)]
     pub list_dir_modified: bool,
 
+    /// Sort dirs by time accessed (name by default)
+    #[arg(long, default_value_t = false)]
+    pub list_dir_sort_accessed: bool,
+
+    /// Sort dirs by time created (name by default)
+    #[arg(long, default_value_t = false)]
+    pub list_dir_sort_created: bool,
+
+    /// Sort dirs by time modified (name by default)
+    #[arg(long, default_value_t = false)]
+    pub list_dir_sort_modified: bool,
+
+    /// Sort dirs by count (name by default)
+    #[arg(long, default_value_t = false)]
+    pub list_dir_sort_count: bool,
+
     /// Sort directories in list DESC (ASC by default)
     #[arg(long, default_value_t = false)]
     pub list_dir_reverse: bool,
@@ -103,6 +119,22 @@ pub struct Config {
     /// Show file modified time
     #[arg(long, default_value_t = false)]
     pub list_file_modified: bool,
+
+    /// Sort files by time accessed (name by default)
+    #[arg(long, default_value_t = false)]
+    pub list_file_sort_accessed: bool,
+
+    /// Sort files by time created (name by default)
+    #[arg(long, default_value_t = false)]
+    pub list_file_sort_created: bool,
+
+    /// Sort files by time modified (name by default)
+    #[arg(long, default_value_t = false)]
+    pub list_file_sort_modified: bool,
+
+    /// Sort files by size (name by default)
+    #[arg(long, default_value_t = false)]
+    pub list_file_sort_size: bool,
 
     /// Sort files in list DESC (ASC by default)
     #[arg(long, default_value_t = false)]

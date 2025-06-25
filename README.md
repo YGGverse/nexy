@@ -89,6 +89,18 @@ nexy -p /path/to/public_dir
 --list-dir-modified
         Show directory modified time
 
+--list-dir-sort-accessed
+        Sort dirs by time accessed (name by default)
+
+--list-dir-sort-created
+        Sort dirs by time created (name by default)
+
+--list-dir-sort-modified
+        Sort dirs by time modified (name by default)
+
+--list-dir-sort-count
+        Sort dirs by count (name by default)
+
 --list-dir-reverse
         Sort directories in list DESC (ASC by default)
 
@@ -103,6 +115,18 @@ nexy -p /path/to/public_dir
 
 --list-file-modified
         Show file modified time
+
+--list-file-sort-accessed
+        Sort files by time accessed (name by default)
+
+--list-file-sort-created
+        Sort files by time created (name by default)
+
+--list-file-sort-modified
+        Sort files by time modified (name by default)
+
+--list-file-sort-size
+        Sort files by size (name by default)
 
 --list-file-reverse
         Sort files in list DESC (ASC by default)

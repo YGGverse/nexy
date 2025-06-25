@@ -145,13 +145,25 @@ impl Storage {
             r.push("=> ../".to_string())
         }
         // format dirs list
-        dirs.sort_by(|a, b| a.name.cmp(&b.name));
-        if self.list_config.dir.is_reverse {
+        let dc = &self.list_config.dir; // just short alias
+        dirs.sort_by(|a, b| {
+            if dc.is_sort_accessed {
+                a.meta.atime().cmp(&b.meta.atime())
+            } else if dc.is_sort_created {
+                a.meta.ctime().cmp(&b.meta.ctime())
+            } else if dc.is_sort_modified {
+                a.meta.mtime().cmp(&b.meta.mtime())
+            } else if dc.is_sort_count {
+                a.meta.size().cmp(&b.meta.size())
+            } else {
+                a.name.cmp(&b.name)
+            }
+        });
+        if dc.is_reverse {
             dirs.reverse()
         }
         for dir in dirs {
             r.push({
-                let dc = &self.list_config.dir; // just short alias
                 let mut l = format!("=> {}/", encode(&dir.name)); // link
                 let mut a = Vec::new(); // alt
                 if dc.is_count {
@@ -174,13 +186,25 @@ impl Storage {
             })
         }
         // format files list
-        files.sort_by(|a, b| a.name.cmp(&b.name));
-        if self.list_config.file.is_reverse {
+        let fc = &self.list_config.file; // just short alias
+        files.sort_by(|a, b| {
+            if fc.is_sort_accessed {
+                a.meta.atime().cmp(&b.meta.atime())
+            } else if fc.is_sort_created {
+                a.meta.ctime().cmp(&b.meta.ctime())
+            } else if fc.is_sort_modified {
+                a.meta.mtime().cmp(&b.meta.mtime())
+            } else if fc.is_sort_size {
+                a.meta.size().cmp(&b.meta.size())
+            } else {
+                a.name.cmp(&b.name)
+            }
+        });
+        if fc.is_reverse {
             files.reverse()
         }
         for file in files {
             r.push({
-                let fc = &self.list_config.file; // just short alias
                 let mut l = format!("=> {}", encode(&file.name)); // link
                 let mut a = Vec::new(); // alt
                 if fc.is_size {
