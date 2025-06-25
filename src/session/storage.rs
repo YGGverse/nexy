@@ -149,8 +149,8 @@ impl Storage {
         for dir in dirs {
             r.push({
                 let dc = &self.list_config.dir; // just short alias
-                let mut l = format!("=> {}/", encode(&dir.name));
-                let mut a = Vec::new();
+                let mut l = format!("=> {}/", encode(&dir.name)); // link
+                let mut a = Vec::new(); // alt
                 if dc.is_count {
                     a.push(dir.count.to_string());
                 }
@@ -175,8 +175,8 @@ impl Storage {
         for file in files {
             r.push({
                 let fc = &self.list_config.file; // just short alias
-                let mut l = format!("=> {}", encode(&file.name));
-                let mut a = Vec::new();
+                let mut l = format!("=> {}", encode(&file.name)); // link
+                let mut a = Vec::new(); // alt
                 if fc.is_size {
                     a.push(b(file.meta.size()))
                 }
