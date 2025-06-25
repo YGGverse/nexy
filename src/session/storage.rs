@@ -31,7 +31,7 @@ impl Storage {
             bail!("Symlinks yet not supported!");
         }
         Ok(Self {
-            list_config: ListConfig::init(config),
+            list_config: ListConfig::init(config)?,
             public_dir,
             read_chunk: config.read_chunk,
         })

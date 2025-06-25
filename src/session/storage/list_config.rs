@@ -34,8 +34,34 @@ pub struct ListConfig {
 }
 
 impl ListConfig {
-    pub fn init(config: &crate::config::Config) -> Self {
-        Self {
+    pub fn init(config: &crate::config::Config) -> anyhow::Result<Self> {
+        use anyhow::bail;
+        fn is_unique(args: &[bool]) -> bool {
+            let mut c = 0;
+            for a in args {
+                if *a {
+                    c += 1
+                }
+            }
+            c <= 1
+        }
+        if !is_unique(&[
+            config.list_dir_sort_accessed,
+            config.list_dir_sort_created,
+            config.list_dir_sort_modified,
+            config.list_dir_sort_count,
+        ]) {
+            bail!("Dir sort option should be unique!")
+        }
+        if !is_unique(&[
+            config.list_file_sort_accessed,
+            config.list_file_sort_created,
+            config.list_file_sort_modified,
+            config.list_file_sort_size,
+        ]) {
+            bail!("File sort option should be unique!")
+        }
+        Ok(Self {
             dir: Dir {
                 time: Time {
                     is_accessed: config.list_dir_accessed,
@@ -71,6 +97,6 @@ impl ListConfig {
                 },
             },
             time_format: config.list_time_format.clone(),
-        }
+        })
     }
 }
