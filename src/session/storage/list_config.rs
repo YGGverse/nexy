@@ -1,3 +1,7 @@
+//! This is an attempt to build a structured,
+//! valid listing configuration from the plain `clap` arguments list.
+//! This feature is evolving, and it may require refactoring in the future.
+
 pub struct Time {
     pub is_accessed: bool,
     pub is_created: bool,
