@@ -89,6 +89,9 @@ nexy -p /path/to/public_dir
 --list-dir-modified
         Show directory modified time
 
+--list-dir-reverse
+        Sort directories in list DESC (ASC by default)
+
 --list-file-size
         Show file size in list (as the alternative text for navigation links)
 
@@ -100,6 +103,9 @@ nexy -p /path/to/public_dir
 
 --list-file-modified
         Show file modified time
+
+--list-file-reverse
+        Sort files in list DESC (ASC by default)
 
 --list-time-format <LIST_TIME_FORMAT>
         Time format for listing items

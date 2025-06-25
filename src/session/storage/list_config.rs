@@ -5,12 +5,14 @@ pub struct Time {
 }
 
 pub struct Dir {
-    pub time: Time,
     pub is_count: bool,
+    pub is_reverse: bool,
+    pub time: Time,
 }
 pub struct File {
-    pub time: Time,
+    pub is_reverse: bool,
     pub is_size: bool,
+    pub time: Time,
 }
 
 pub struct ListConfig {
@@ -29,6 +31,7 @@ impl ListConfig {
                     is_modified: config.list_dir_modified,
                 },
                 is_count: config.list_dir_count,
+                is_reverse: config.list_dir_reverse,
             },
             file: File {
                 time: Time {
@@ -37,6 +40,7 @@ impl ListConfig {
                     is_modified: config.list_file_modified,
                 },
                 is_size: config.list_file_size,
+                is_reverse: config.list_file_reverse,
             },
             time_format: config.list_time_format.clone(),
         }

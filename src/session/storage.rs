@@ -146,6 +146,9 @@ impl Storage {
         }
         // format dirs list
         dirs.sort_by(|a, b| a.name.cmp(&b.name));
+        if self.list_config.dir.is_reverse {
+            dirs.reverse()
+        }
         for dir in dirs {
             r.push({
                 let dc = &self.list_config.dir; // just short alias
@@ -172,6 +175,9 @@ impl Storage {
         }
         // format files list
         files.sort_by(|a, b| a.name.cmp(&b.name));
+        if self.list_config.file.is_reverse {
+            files.reverse()
+        }
         for file in files {
             r.push({
                 let fc = &self.list_config.file; // just short alias

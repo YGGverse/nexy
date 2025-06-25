@@ -84,6 +84,10 @@ pub struct Config {
     #[arg(long, default_value_t = false)]
     pub list_dir_modified: bool,
 
+    /// Sort directories in list DESC (ASC by default)
+    #[arg(long, default_value_t = false)]
+    pub list_dir_reverse: bool,
+
     /// Show file size in list (as the alternative text for navigation links)
     #[arg(long, default_value_t = false)]
     pub list_file_size: bool,
@@ -99,6 +103,10 @@ pub struct Config {
     /// Show file modified time
     #[arg(long, default_value_t = false)]
     pub list_file_modified: bool,
+
+    /// Sort files in list DESC (ASC by default)
+    #[arg(long, default_value_t = false)]
+    pub list_file_reverse: bool,
 
     /// Time format for listing items
     ///
