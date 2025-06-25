@@ -147,13 +147,13 @@ impl Storage {
         // format dirs list
         let dc = &self.list_config.dir; // just short alias
         dirs.sort_by(|a, b| {
-            if dc.is_sort_accessed {
+            if dc.sort.time.is_accessed {
                 a.meta.atime().cmp(&b.meta.atime())
-            } else if dc.is_sort_created {
+            } else if dc.sort.time.is_created {
                 a.meta.ctime().cmp(&b.meta.ctime())
-            } else if dc.is_sort_modified {
+            } else if dc.sort.time.is_modified {
                 a.meta.mtime().cmp(&b.meta.mtime())
-            } else if dc.is_sort_count {
+            } else if dc.sort.is_count {
                 a.meta.size().cmp(&b.meta.size())
             } else {
                 a.name.cmp(&b.name)
@@ -188,13 +188,13 @@ impl Storage {
         // format files list
         let fc = &self.list_config.file; // just short alias
         files.sort_by(|a, b| {
-            if fc.is_sort_accessed {
+            if fc.sort.time.is_accessed {
                 a.meta.atime().cmp(&b.meta.atime())
-            } else if fc.is_sort_created {
+            } else if fc.sort.time.is_created {
                 a.meta.ctime().cmp(&b.meta.ctime())
-            } else if fc.is_sort_modified {
+            } else if fc.sort.time.is_modified {
                 a.meta.mtime().cmp(&b.meta.mtime())
-            } else if fc.is_sort_size {
+            } else if fc.sort.is_size {
                 a.meta.size().cmp(&b.meta.size())
             } else {
                 a.name.cmp(&b.name)
