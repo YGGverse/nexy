@@ -20,6 +20,9 @@
 
 ## Usage
 
+> [!TIP]
+> For more examples, visit the project [Wiki](https://github.com/YGGverse/nexy/wiki)
+
 ``` bash
 nexy -p /path/to/public_dir
 ```
