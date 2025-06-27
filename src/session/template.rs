@@ -28,7 +28,7 @@ impl Template {
             },
             welcome: match config.template_access_denied {
                 Some(ref p) => read_to_string(p)?,
-                None => "Welcome to Nexy!\n{list}".into(),
+                None => "Welcome to Nexy!\n\n{list}".into(),
             },
         })
     }
