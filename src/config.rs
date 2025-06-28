@@ -31,6 +31,12 @@ pub struct Config {
     #[arg(short, long)]
     pub public: String,
 
+    /// Show hidden entries (in the directory listing)
+    ///
+    /// * Important: this option does not prevent access to hidden files!
+    #[arg(long, default_value_t = false)]
+    pub show_hidden: bool,
+
     /// Absolute path to the `Access denied` template file
     ///
     /// * this template file can be in binary format (e.g. image)
@@ -56,6 +62,8 @@ pub struct Config {
     ///
     /// **Patterns**
     /// * `{list}` - entries list for the `public` directory
+    /// * `{hosts}` - unique visitors count
+    /// * `{hits}` - requests count
     #[arg(long)]
     pub template_welcome: Option<String>,
 

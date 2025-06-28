@@ -18,6 +18,10 @@ pub struct Storage {
     public_dir: PathBuf,
     /// Streaming buffer options
     read_chunk: usize,
+    /// Show hidden entries (in the directory listing)
+    ///
+    /// * important: this option does not prevent access to hidden files!
+    show_hidden: bool,
 }
 
 impl Storage {
@@ -34,6 +38,7 @@ impl Storage {
             list_config: ListConfig::init(config)?,
             public_dir,
             read_chunk: config.read_chunk,
+            show_hidden: config.show_hidden,
         })
     }
 
@@ -124,18 +129,19 @@ impl Storage {
         let mut files = Vec::with_capacity(C);
         for entry in fs::read_dir(path)? {
             let e = entry?;
+            let name = e.file_name().to_string_lossy().to_string();
+            if !self.show_hidden && name.starts_with('.') {
+                continue;
+            }
             let meta = fs::metadata(e.path())?;
             match (meta.is_dir(), meta.is_file()) {
                 (true, _) => dirs.push(Dir {
                     meta,
-                    name: e.file_name().to_string_lossy().to_string(),
+                    name,
                     count: fs::read_dir(e.path()).map_or(0, |i| i.count()),
                 }),
-                (_, true) => files.push(File {
-                    meta,
-                    name: e.file_name().to_string_lossy().to_string(),
-                }),
-                _ => {} // @TODO symlinks support?
+                (_, true) => files.push(File { meta, name }),
+                _ => continue, // @TODO symlinks support?
             }
         }
         // build resulting list

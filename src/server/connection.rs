@@ -32,6 +32,7 @@ impl Connection {
     }
 
     pub fn handle(mut self) {
+        self.session.event.connection.update(&self.address.client);
         let mut t = 0; // total bytes
         match self.request() {
             Ok(q) => {
@@ -71,7 +72,11 @@ impl Connection {
             Response::File(b) => b,
             Response::Directory(ref s, is_root) => {
                 &if is_root {
-                    self.session.template.welcome(Some(s))
+                    self.session.template.welcome(
+                        Some(s),
+                        Some(self.session.event.connection.hosts()),
+                        Some(self.session.event.connection.hits()),
+                    )
                 } else {
                     self.session.template.index(Some(s))
                 }

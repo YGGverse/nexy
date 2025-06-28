@@ -51,6 +51,11 @@ nexy -p /path/to/public_dir
 -p, --public <PUBLIC>
         Absolute path to the public files directory
 
+--show-hidden
+        Show hidden entries (in the directory listing)
+
+        * Important: this option does not prevent access to hidden files!
+
 --template-access-denied <TEMPLATE_ACCESS_DENIED>
         Absolute path to the `Access denied` template file
 
@@ -71,7 +76,7 @@ nexy -p /path/to/public_dir
 
         * this template file expects pattern and cannot be in binary format
 
-        **Patterns** * `{list}` - entries list for the `public` directory
+        **Patterns** * `{list}` - entries list for the `public` directory * `{hosts}` - unique visitors count * `{hits}` - requests count
 
 --template-index <TEMPLATE_INDEX>
         Absolute path to the `Index` template file for each directory
