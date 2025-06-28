@@ -12,15 +12,11 @@ pub fn start(server: TcpListener, session: &Arc<Session>) {
                     let session = session.clone();
                     move || match Connection::init(&session, stream) {
                         Ok(connection) => connection.handle(),
-                        Err(e) => session
-                            .debug
-                            .error(&format!("failed to init connection: `{e}`")),
+                        Err(e) => eprintln!("failed to init connection: `{e}`"),
                     }
                 });
             }
-            Err(e) => session
-                .debug
-                .error(&format!("failed to accept incoming connection: `{e}`")),
+            Err(e) => eprintln!("failed to accept incoming connection: `{e}`"),
         }
     }
 }

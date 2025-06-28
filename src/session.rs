@@ -1,18 +1,17 @@
 mod access_log;
-mod debug;
 mod public;
 mod request;
 mod template;
 
-use {access_log::AccessLog, debug::Debug, public::Public, request::Request, template::Template};
+use {access_log::AccessLog, public::Public, request::Request, template::Template};
 
 /// Shared, multi-thread features for the current server session
 pub struct Session {
     pub access_log: AccessLog,
-    pub debug: Debug,
     pub public: Public,
     pub request: Option<Request>,
     pub template: Template,
+    pub is_debug: bool,
 }
 
 impl Session {
@@ -20,7 +19,6 @@ impl Session {
         let template = Template::init(config)?;
         Ok(Self {
             access_log: AccessLog::init(config)?,
-            debug: Debug::init(config)?,
             public: Public::init(config)?,
             request: if template.welcome.contains("{hosts}")
                 || template.welcome.contains("{hits}")
@@ -32,6 +30,7 @@ impl Session {
                 None // do not int request collector if its features not in use
             },
             template,
+            is_debug: config.debug,
         })
     }
 }

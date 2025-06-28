@@ -20,12 +20,9 @@ pub struct Config {
     ])]
     pub bind: Vec<String>,
 
-    /// Debug level
-    ///
-    /// * `e` - error
-    /// * `i` - info
-    #[arg(short, long, default_value_t = String::from("ei"))]
-    pub debug: String,
+    /// Print debug information
+    #[arg(short, long, default_value_t = false)]
+    pub debug: bool,
 
     /// Absolute path to the public files directory
     #[arg(short, long)]

@@ -41,12 +41,8 @@ nexy -p /path/to/public_dir
 
         [default: 127.0.0.1:1900 [::1]:1900]
 
--d, --debug <DEBUG>
-        Debug level
-
-        * `e` - error * `i` - info
-
-        [default: ei]
+-d, --debug
+        Print debug information
 
 -p, --public <PUBLIC>
         Absolute path to the public files directory

@@ -1,9 +1,9 @@
-/// Internal types
+/// Internal server response types
 pub enum Response<'a> {
     /// Includes reference to the original request
     AccessDenied(&'a str),
-    /// Includes server-side error description
-    InternalServerError(String),
+    /// Includes query + server-side error description
+    InternalServerError(&'a str, String),
     /// Includes reference to the original request
     NotFound(&'a str),
     /// Includes bytes array

@@ -35,10 +35,12 @@ impl Connection {
         let mut t = 0; // total bytes
         match self.request() {
             Ok(q) => {
-                self.session.debug.info(&format!(
-                    "[{}] < [{}] request `{q}`...",
-                    self.address.server, self.address.client
-                ));
+                if self.session.is_debug {
+                    println!(
+                        "[{}] < [{}] request `{q}`...",
+                        self.address.server, self.address.client
+                    )
+                }
                 if let Some(ref i) = self.session.request {
                     i.add(&self.address.client, &q)
                 }
@@ -51,10 +53,13 @@ impl Connection {
                     .clf(&self.address.client, Some(&q), 0, t);
             }
             Err(e) => {
-                t += self.response(Response::InternalServerError(format!(
-                    "[{}] < [{}] failed to handle incoming request: `{e}`",
-                    self.address.server, self.address.client
-                )));
+                t += self.response(Response::InternalServerError(
+                    "",
+                    format!(
+                        "[{}] < [{}] failed to handle incoming request: `{e}`",
+                        self.address.server, self.address.client
+                    ),
+                ));
                 self.session
                     .access_log
                     .clf(&self.address.client, None, 1, t);
@@ -87,50 +92,61 @@ impl Connection {
                     )
                 }
             }
-            Response::InternalServerError(e) => {
-                self.session.debug.error(&e);
+            Response::InternalServerError(q, e) => {
+                eprintln!(
+                    "[{}] > [{}] `{q}`: internal server error: `{e}`",
+                    self.address.server, self.address.client
+                );
                 self.session.template.internal_server_error()
             }
             Response::AccessDenied(q) => {
-                self.session.debug.error(&format!(
+                eprintln!(
                     "[{}] < [{}] access to `{q}` denied.",
                     self.address.server, self.address.client
-                ));
+                );
                 self.session.template.access_denied()
             }
             Response::NotFound(q) => {
-                self.session.debug.error(&format!(
+                eprintln!(
                     "[{}] < [{}] requested resource `{q}` not found.",
                     self.address.server, self.address.client
-                ));
+                );
                 self.session.template.not_found()
             }
         };
         match self.stream.write_all(bytes) {
-            Ok(()) => self.session.debug.info(&format!(
-                "[{}] > [{}] sent {} bytes response.",
-                self.address.server,
-                self.address.client,
-                bytes.len()
-            )),
-            Err(e) => self.session.debug.error(&format!(
+            Ok(()) => {
+                if self.session.is_debug {
+                    println!(
+                        "[{}] > [{}] sent {} bytes response.",
+                        self.address.server,
+                        self.address.client,
+                        bytes.len()
+                    )
+                }
+            }
+            Err(e) => eprintln!(
                 "[{}] ! [{}] failed to response: `{e}`",
                 self.address.server, self.address.client,
-            )),
+            ),
         };
         bytes.len()
     }
 
     fn shutdown(self) {
         match self.stream.shutdown(std::net::Shutdown::Both) {
-            Ok(()) => self.session.debug.info(&format!(
-                "[{}] - [{}] connection closed by server.",
-                self.address.server, self.address.client,
-            )),
-            Err(e) => self.session.debug.error(&format!(
+            Ok(()) => {
+                if self.session.is_debug {
+                    println!(
+                        "[{}] - [{}] connection closed by server.",
+                        self.address.server, self.address.client,
+                    )
+                }
+            }
+            Err(e) => eprintln!(
                 "[{}] > [{}] failed to close connection: `{e}`",
                 self.address.server, self.address.client,
-            )),
+            ),
         }
     }
 }
