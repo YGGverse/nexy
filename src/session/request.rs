@@ -37,15 +37,22 @@ impl Request {
         }
     }
 
-    pub fn total(&self) -> usize {
+    pub fn total(&self, query_prefix: Option<&str>) -> usize {
+        let mut t = 0;
         if let Some(ref this) = self.0 {
-            let mut t = 0;
-            for c in this.read().unwrap().values() {
-                t += c.len()
+            for queries in this.read().unwrap().values() {
+                match query_prefix {
+                    Some(p) => {
+                        for q in queries {
+                            if q.value.starts_with(p) {
+                                t += 1
+                            }
+                        }
+                    }
+                    None => t += queries.len(),
+                }
             }
-            t
-        } else {
-            0
         }
+        t
     }
 }

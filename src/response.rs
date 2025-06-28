@@ -8,6 +8,6 @@ pub enum Response<'a> {
     NotFound(&'a str),
     /// Includes bytes array
     File(&'a [u8]),
-    /// Includes bytes array + public root directory status
-    Directory(String, bool),
+    /// Includes query, list + is public root directory status
+    Directory(&'a str, String, bool),
 }

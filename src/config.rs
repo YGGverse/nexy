@@ -73,6 +73,8 @@ pub struct Config {
     ///
     /// **Patterns**
     /// * `{list}` - entries list for the current directory
+    /// * `{hosts}` - unique visitors count
+    /// * `{hits}` - requests count
     #[arg(long)]
     pub template_index: Option<String>,
 

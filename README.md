@@ -83,7 +83,7 @@ nexy -p /path/to/public_dir
 
         * this template file expects pattern and cannot be in binary format
 
-        **Patterns** * `{list}` - entries list for the current directory
+        **Patterns** * `{list}` - entries list for the current directory * `{hosts}` - unique visitors count * `{hits}` - requests count
 
 --list-dir-show-count
         Show files count in dir (as the alternative text for navigation links)

@@ -70,15 +70,19 @@ impl Connection {
     fn response(&mut self, response: Response) -> usize {
         let bytes = match response {
             Response::File(b) => b,
-            Response::Directory(ref s, is_root) => {
+            Response::Directory(q, ref s, is_root) => {
                 &if is_root {
                     self.session.template.welcome(
                         Some(s),
                         Some(self.session.request.count()),
-                        Some(self.session.request.total()),
+                        Some(self.session.request.total(None)),
                     )
                 } else {
-                    self.session.template.index(Some(s))
+                    self.session.template.index(
+                        Some(s),
+                        Some(self.session.request.count()),
+                        Some(self.session.request.total(Some(q))),
+                    )
                 }
             }
             Response::InternalServerError(e) => {

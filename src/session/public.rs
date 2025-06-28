@@ -60,7 +60,7 @@ impl Public {
         match fs::metadata(&p) {
             Ok(t) => match (t.is_dir(), t.is_file()) {
                 (true, _) => callback(match self.list(&p) {
-                    Ok(l) => Response::Directory(l, p == self.public_dir),
+                    Ok(list) => Response::Directory(query, list, p == self.public_dir),
                     Err(e) => Response::InternalServerError(e.to_string()),
                 }),
                 (_, true) => match fs::File::open(p) {
