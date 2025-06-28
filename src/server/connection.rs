@@ -39,7 +39,9 @@ impl Connection {
                     "[{}] < [{}] request `{q}`...",
                     self.address.server, self.address.client
                 ));
-                self.session.request.add(&self.address.client, &q);
+                if let Some(ref i) = self.session.request {
+                    i.add(&self.address.client, &q)
+                }
                 self.session
                     .clone()
                     .public
@@ -74,14 +76,14 @@ impl Connection {
                 &if is_root {
                     self.session.template.welcome(
                         Some(s),
-                        Some(self.session.request.count()),
-                        Some(self.session.request.total(None)),
+                        self.session.request.as_ref().map(|i| i.count()),
+                        self.session.request.as_ref().map(|i| i.total(None)),
                     )
                 } else {
                     self.session.template.index(
                         Some(s),
-                        Some(self.session.request.count()),
-                        Some(self.session.request.total(Some(q))),
+                        self.session.request.as_ref().map(|i| i.count()),
+                        self.session.request.as_ref().map(|i| i.total(Some(q))),
                     )
                 }
             }
