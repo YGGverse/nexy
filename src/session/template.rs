@@ -1,8 +1,8 @@
 pub struct Template {
     access_denied: Vec<u8>,
-    index: String,
     internal_server_error: Vec<u8>,
     not_found: Vec<u8>,
+    pub index: String,
     pub welcome: String,
 }
 

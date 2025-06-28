@@ -1,14 +1,14 @@
-use std::time::SystemTime;
+use chrono::{DateTime, Local};
 
 pub struct Query {
-    pub time: SystemTime,
+    pub time: DateTime<Local>,
     pub value: String,
 }
 
 impl Query {
     pub fn new(value: &str) -> Self {
         Self {
-            time: SystemTime::now(),
+            time: Local::now(),
             value: value.to_string(),
         }
     }

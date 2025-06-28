@@ -23,8 +23,11 @@ impl Session {
             debug: Debug::init(config)?,
             public: Public::init(config)?,
             request: Request::init(
-                // do not init `Connection` event if its features not in use
-                template.welcome.contains("{hosts}") || template.welcome.contains("{hits}"),
+                // do not int request collector if its features not in use
+                template.welcome.contains("{hosts}")
+                    || template.welcome.contains("{hits}")
+                    || template.index.contains("{hosts}")
+                    || template.index.contains("{hits}"),
             ),
             template,
         })
