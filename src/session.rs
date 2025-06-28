@@ -1,17 +1,17 @@
 mod access_log;
 mod debug;
 mod public;
-mod stats;
+mod request;
 mod template;
 
-use {access_log::AccessLog, debug::Debug, public::Public, stats::Stats, template::Template};
+use {access_log::AccessLog, debug::Debug, public::Public, request::Request, template::Template};
 
 /// Shared, multi-thread features for the current server session
 pub struct Session {
     pub access_log: AccessLog,
     pub debug: Debug,
-    pub stats: Stats,
     pub public: Public,
+    pub request: Request,
     pub template: Template,
 }
 
@@ -21,11 +21,11 @@ impl Session {
         Ok(Self {
             access_log: AccessLog::init(config)?,
             debug: Debug::init(config)?,
-            stats: Stats::init(
+            public: Public::init(config)?,
+            request: Request::init(
                 // do not init `Connection` event if its features not in use
                 template.welcome.contains("{hosts}") || template.welcome.contains("{hits}"),
-            )?,
-            public: Public::init(config)?,
+            ),
             template,
         })
     }

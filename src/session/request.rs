@@ -1,13 +1,16 @@
+mod query;
+
+use query::Query;
 use std::{
     collections::HashMap,
     net::{IpAddr, SocketAddr},
     sync::RwLock,
 };
 
-/// Count peer connections (for the current server session)
-pub struct Connections(Option<RwLock<HashMap<IpAddr, usize>>>);
+/// Collect peer requests to print stats and visitors count
+pub struct Request(Option<RwLock<HashMap<IpAddr, Vec<Query>>>>);
 
-impl Connections {
+impl Request {
     pub fn init(is_enabled: bool) -> Self {
         if is_enabled {
             Self(Some(RwLock::new(HashMap::with_capacity(100))))
@@ -16,13 +19,13 @@ impl Connections {
         }
     }
 
-    pub fn add(&self, peer: &SocketAddr) {
+    pub fn add(&self, peer: &SocketAddr, query: &str) {
         if let Some(ref this) = self.0 {
             this.write()
                 .unwrap()
                 .entry(peer.ip())
-                .and_modify(|c| *c += 1)
-                .or_insert(1);
+                .and_modify(|c| c.push(Query::new(query)))
+                .or_insert(vec![Query::new(query)]);
         }
     }
 
@@ -36,7 +39,11 @@ impl Connections {
 
     pub fn total(&self) -> usize {
         if let Some(ref this) = self.0 {
-            this.read().unwrap().values().sum()
+            let mut t = 0;
+            for c in this.read().unwrap().values() {
+                t += c.len()
+            }
+            t
         } else {
             0
         }
