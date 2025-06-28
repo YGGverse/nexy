@@ -5,9 +5,9 @@ use std::{
 };
 
 /// Count peer connections (for the current server session)
-pub struct Connection(Option<RwLock<HashMap<IpAddr, usize>>>);
+pub struct Connections(Option<RwLock<HashMap<IpAddr, usize>>>);
 
-impl Connection {
+impl Connections {
     pub fn init(is_enabled: bool) -> Self {
         if is_enabled {
             Self(Some(RwLock::new(HashMap::with_capacity(100))))
@@ -16,7 +16,7 @@ impl Connection {
         }
     }
 
-    pub fn update(&self, peer: &SocketAddr) {
+    pub fn add(&self, peer: &SocketAddr) {
         if let Some(ref this) = self.0 {
             this.write()
                 .unwrap()
@@ -26,7 +26,7 @@ impl Connection {
         }
     }
 
-    pub fn hosts(&self) -> usize {
+    pub fn count(&self) -> usize {
         if let Some(ref this) = self.0 {
             this.read().unwrap().len()
         } else {
@@ -34,7 +34,7 @@ impl Connection {
         }
     }
 
-    pub fn hits(&self) -> usize {
+    pub fn total(&self) -> usize {
         if let Some(ref this) = self.0 {
             this.read().unwrap().values().sum()
         } else {

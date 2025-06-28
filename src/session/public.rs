@@ -11,7 +11,7 @@ use std::{
 };
 
 /// In-session disk storage API
-pub struct Storage {
+pub struct Public {
     /// Listing options
     list_config: ListConfig,
     /// Root path to storage, used also for the access validation
@@ -24,7 +24,7 @@ pub struct Storage {
     show_hidden: bool,
 }
 
-impl Storage {
+impl Public {
     pub fn init(config: &crate::config::Config) -> Result<Self> {
         let public_dir = PathBuf::from_str(&config.public)?.canonicalize()?;
         let t = fs::metadata(&public_dir)?;

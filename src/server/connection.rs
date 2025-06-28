@@ -32,7 +32,7 @@ impl Connection {
     }
 
     pub fn handle(mut self) {
-        self.session.event.connection.update(&self.address.client);
+        self.session.stats.connections.add(&self.address.client);
         let mut t = 0; // total bytes
         match self.request() {
             Ok(q) => {
@@ -42,7 +42,7 @@ impl Connection {
                 ));
                 self.session
                     .clone()
-                    .storage
+                    .public
                     .request(&q, |r| t += self.response(r)); // chunk loop
                 self.session
                     .access_log
@@ -74,8 +74,8 @@ impl Connection {
                 &if is_root {
                     self.session.template.welcome(
                         Some(s),
-                        Some(self.session.event.connection.hosts()),
-                        Some(self.session.event.connection.hits()),
+                        Some(self.session.stats.connections.count()),
+                        Some(self.session.stats.connections.total()),
                     )
                 } else {
                     self.session.template.index(Some(s))
