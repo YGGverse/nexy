@@ -61,7 +61,7 @@ impl Public {
             Ok(t) => match (t.is_dir(), t.is_file()) {
                 (true, _) => callback(match self.list(&p) {
                     Ok(list) => Response::Directory(query, list, p == self.public_dir),
-                    Err(e) => Response::InternalServerError(query, e.to_string()),
+                    Err(e) => Response::InternalServerError(Some(query), e.to_string()),
                 }),
                 (_, true) => match fs::File::open(p) {
                     Ok(mut f) => loop {
@@ -75,21 +75,21 @@ impl Public {
                             }
                             Err(e) => {
                                 return callback(Response::InternalServerError(
-                                    query,
+                                    Some(query),
                                     format!("failed to read response chunk: `{e}`"),
                                 ));
                             }
                         }
                     },
                     Err(e) => callback(Response::InternalServerError(
-                        query,
+                        Some(query),
                         format!("failed to read response: `{e}`"),
                     )),
                 },
                 _ => panic!(), // unexpected
             },
             Err(e) => callback(Response::InternalServerError(
-                query,
+                Some(query),
                 format!("failed to read storage: `{e}`"),
             )),
         }

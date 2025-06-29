@@ -3,7 +3,7 @@ pub enum Response<'a> {
     /// Includes reference to the original request
     AccessDenied(&'a str),
     /// Includes query + server-side error description
-    InternalServerError(&'a str, String),
+    InternalServerError(Option<&'a str>, String),
     /// Includes reference to the original request
     NotFound(&'a str),
     /// Includes bytes array

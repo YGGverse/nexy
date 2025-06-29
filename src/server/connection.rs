@@ -1,7 +1,7 @@
 use crate::{response::Response, session::Session};
 use anyhow::Result;
 use std::{
-    io::{Read, Write},
+    io::{ErrorKind, Read, Write},
     net::{SocketAddr, TcpStream},
     sync::Arc,
 };
@@ -41,33 +41,21 @@ impl Connection {
                         self.address.server, self.address.client
                     )
                 }
-                if let Some(ref r) = self.session.request {
-                    r.add(&self.address.client, &q)
+                if let Some(ref request) = self.session.request {
+                    request.add(&self.address.client, &q)
                 }
-                if self
-                    .session
-                    .clone()
-                    .public
-                    .request(&q, |r| match self.response(r) {
-                        Ok(sent) => {
-                            t += sent;
-                            if self.session.is_debug {
-                                println!(
-                                    "[{}] > [{}] sent {sent} ({t} total) bytes response.",
-                                    self.address.server, self.address.client
-                                )
-                            };
-                            true
-                        }
-                        Err(e) => {
-                            eprintln!(
-                                "[{}] > [{}] `{q}`: error sending response: `{e}`",
+                if self.session.clone().public.request(&q, |response| {
+                    self.response(response).is_ok_and(|sent| {
+                        t += sent;
+                        if self.session.is_debug {
+                            println!(
+                                "[{}] > [{}] sent {sent} ({t} total) bytes response.",
                                 self.address.server, self.address.client
-                            );
-                            false
-                        }
+                            )
+                        };
+                        true
                     })
-                {
+                }) {
                     self.session
                         .access_log
                         .clf(&self.address.client, Some(&q), 0, t);
@@ -76,10 +64,16 @@ impl Connection {
                     self.session
                         .access_log
                         .clf(&self.address.client, Some(&q), 1, t);
+                    if self.session.is_debug {
+                        println!(
+                            "[{}] - [{}] connection closed by client.",
+                            self.address.server, self.address.client,
+                        )
+                    }
                 }
             }
             Err(e) => match self.response(Response::InternalServerError(
-                "",
+                None,
                 format!(
                     "[{}] < [{}] failed to handle incoming request: `{e}`",
                     self.address.server, self.address.client
@@ -118,8 +112,8 @@ impl Connection {
         Ok(urlencoding::decode(std::str::from_utf8(&b[..n])?.trim())?.to_string())
     }
 
-    fn response(&mut self, response: Response) -> Result<usize> {
-        let bytes = match response {
+    fn response(&mut self, response: Response) -> std::io::Result<usize> {
+        let data = match response {
             Response::File(b) => b,
             Response::Directory(q, ref s, is_root) => {
                 &if is_root {
@@ -138,7 +132,7 @@ impl Connection {
             }
             Response::InternalServerError(q, e) => {
                 eprintln!(
-                    "[{}] > [{}] `{q}`: internal server error: `{e}`",
+                    "[{}] > [{}] `{q:?}`: internal server error: `{e}`",
                     self.address.server, self.address.client
                 );
                 self.session.template.internal_server_error()
@@ -158,9 +152,22 @@ impl Connection {
                 self.session.template.not_found()
             }
         };
-        self.stream.write_all(bytes)?;
-        self.stream.flush()?;
-        Ok(bytes.len())
+        match self.stream.write_all(data) {
+            Ok(()) => {
+                self.stream.flush()?;
+                Ok(data.len())
+            }
+            Err(e) => {
+                // client may close the active connection unexpectedly, ignore some kinds
+                if !matches!(e.kind(), ErrorKind::BrokenPipe | ErrorKind::ConnectionReset) {
+                    eprintln!(
+                        "[{}] > [{}] error sending response: `{e}`",
+                        self.address.server, self.address.client
+                    )
+                }
+                Err(e)
+            }
+        }
     }
 
     fn shutdown(self) {
