@@ -7,7 +7,7 @@ use {access_log::AccessLog, public::Public, request::Request, template::Template
 
 /// Shared, multi-thread features for the current server session
 pub struct Session {
-    pub access_log: AccessLog,
+    pub access_log: Option<AccessLog>,
     pub public: Public,
     pub request: Option<Request>,
     pub template: Template,

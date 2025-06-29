@@ -56,14 +56,14 @@ impl Connection {
                         true
                     })
                 }) {
-                    self.session
-                        .access_log
-                        .clf(&self.address.client, Some(&q), 0, t);
+                    if let Some(ref a) = self.session.access_log {
+                        a.clf(&self.address.client, Some(&q), 0, t)
+                    }
                     self.shutdown()
                 } else {
-                    self.session
-                        .access_log
-                        .clf(&self.address.client, Some(&q), 1, t);
+                    if let Some(ref a) = self.session.access_log {
+                        a.clf(&self.address.client, Some(&q), 1, t)
+                    }
                     if self.session.is_debug {
                         println!(
                             "[{}] - [{}] connection closed by client.",
@@ -87,9 +87,9 @@ impl Connection {
                             self.address.server, self.address.client
                         )
                     };
-                    self.session
-                        .access_log
-                        .clf(&self.address.client, None, 2, t);
+                    if let Some(ref a) = self.session.access_log {
+                        a.clf(&self.address.client, None, 2, t)
+                    }
                     self.shutdown()
                 }
                 Err(e) => {
@@ -97,9 +97,9 @@ impl Connection {
                         "[{}] > [{}] handle request error: `{e}`",
                         self.address.server, self.address.client
                     );
-                    self.session
-                        .access_log
-                        .clf(&self.address.client, None, 1, t);
+                    if let Some(ref a) = self.session.access_log {
+                        a.clf(&self.address.client, None, 1, t)
+                    }
                     self.shutdown()
                 }
             },
