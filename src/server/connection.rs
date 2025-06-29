@@ -37,35 +37,79 @@ impl Connection {
             Ok(q) => {
                 if self.session.is_debug {
                     println!(
-                        "[{}] < [{}] request `{q}`...",
+                        "[{}] < [{}] incoming request: `{q}`",
                         self.address.server, self.address.client
                     )
                 }
-                if let Some(ref i) = self.session.request {
-                    i.add(&self.address.client, &q)
+                if let Some(ref r) = self.session.request {
+                    r.add(&self.address.client, &q)
                 }
-                self.session
+                if self
+                    .session
                     .clone()
                     .public
-                    .request(&q, |r| t += self.response(r)); // chunk loop
-                self.session
-                    .access_log
-                    .clf(&self.address.client, Some(&q), 0, t);
+                    .request(&q, |r| match self.response(r) {
+                        Ok(sent) => {
+                            t += sent;
+                            if self.session.is_debug {
+                                println!(
+                                    "[{}] > [{}] sent {sent} ({t} total) bytes response.",
+                                    self.address.server, self.address.client
+                                )
+                            };
+                            true
+                        }
+                        Err(e) => {
+                            eprintln!(
+                                "[{}] > [{}] `{q}`: error sending response: `{e}`",
+                                self.address.server, self.address.client
+                            );
+                            false
+                        }
+                    })
+                {
+                    self.session
+                        .access_log
+                        .clf(&self.address.client, Some(&q), 0, t);
+                    self.shutdown()
+                } else {
+                    self.session
+                        .access_log
+                        .clf(&self.address.client, Some(&q), 1, t);
+                }
             }
-            Err(e) => {
-                t += self.response(Response::InternalServerError(
-                    "",
-                    format!(
-                        "[{}] < [{}] failed to handle incoming request: `{e}`",
+            Err(e) => match self.response(Response::InternalServerError(
+                "",
+                format!(
+                    "[{}] < [{}] failed to handle incoming request: `{e}`",
+                    self.address.server, self.address.client
+                ),
+            )) {
+                Ok(sent) => {
+                    t += sent;
+                    if self.session.is_debug {
+                        println!(
+                            "[{}] > [{}] sent {sent} ({t} total) bytes response.",
+                            self.address.server, self.address.client
+                        )
+                    };
+                    self.session
+                        .access_log
+                        .clf(&self.address.client, None, 2, t);
+                    self.shutdown()
+                }
+                Err(e) => {
+                    eprintln!(
+                        "[{}] > [{}] handle request error: `{e}`",
                         self.address.server, self.address.client
-                    ),
-                ));
-                self.session
-                    .access_log
-                    .clf(&self.address.client, None, 1, t);
-            }
+                    );
+                    self.session
+                        .access_log
+                        .clf(&self.address.client, None, 1, t);
+                    self.shutdown()
+                }
+            },
         }
-        self.shutdown()
     }
 
     fn request(&mut self) -> Result<String> {
@@ -74,7 +118,7 @@ impl Connection {
         Ok(urlencoding::decode(std::str::from_utf8(&b[..n])?.trim())?.to_string())
     }
 
-    fn response(&mut self, response: Response) -> usize {
+    fn response(&mut self, response: Response) -> Result<usize> {
         let bytes = match response {
             Response::File(b) => b,
             Response::Directory(q, ref s, is_root) => {
@@ -114,29 +158,9 @@ impl Connection {
                 self.session.template.not_found()
             }
         };
-        match self.stream.write_all(bytes) {
-            Ok(()) => {
-                if self.session.is_debug {
-                    println!(
-                        "[{}] > [{}] sent {} bytes response.",
-                        self.address.server,
-                        self.address.client,
-                        bytes.len()
-                    )
-                }
-                if let Err(e) = self.stream.flush() {
-                    eprintln!(
-                        "[{}] ! [{}] failed to flush the stream: `{e}`",
-                        self.address.server, self.address.client,
-                    )
-                }
-            }
-            Err(e) => eprintln!(
-                "[{}] ! [{}] failed to response: `{e}`",
-                self.address.server, self.address.client,
-            ),
-        };
-        bytes.len()
+        self.stream.write_all(bytes)?;
+        self.stream.flush()?;
+        Ok(bytes.len())
     }
 
     fn shutdown(self) {

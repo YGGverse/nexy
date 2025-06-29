@@ -42,7 +42,7 @@ impl Public {
         })
     }
 
-    pub fn request(&self, query: &str, mut callback: impl FnMut(Response)) {
+    pub fn request(&self, query: &str, mut callback: impl FnMut(Response) -> bool) -> bool {
         let p = {
             // access restriction zone, change carefully!
             let mut p = PathBuf::from(&self.public_dir);
@@ -67,8 +67,12 @@ impl Public {
                     Ok(mut f) => loop {
                         let mut b = vec![0; self.read_chunk];
                         match f.read(&mut b) {
-                            Ok(0) => break,
-                            Ok(n) => callback(Response::File(&b[..n])),
+                            Ok(0) => return true,
+                            Ok(n) => {
+                                if !callback(Response::File(&b[..n])) {
+                                    return false; // break reader on callback failure
+                                }
+                            }
                             Err(e) => {
                                 return callback(Response::InternalServerError(
                                     query,
