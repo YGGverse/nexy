@@ -72,13 +72,13 @@ impl Connection {
                     }
                 }
             }
-            Err(e) => match self.response(Response::InternalServerError(
-                None,
-                format!(
+            Err(e) => match self.response(Response::InternalServerError {
+                query: None,
+                error: format!(
                     "[{}] < [{}] failed to handle incoming request: `{e}`",
                     self.address.server, self.address.client
                 ),
-            )) {
+            }) {
                 Ok(sent) => {
                     t += sent;
                     if self.session.is_debug {
@@ -115,7 +115,11 @@ impl Connection {
     fn response(&mut self, response: Response) -> std::io::Result<usize> {
         let data = match response {
             Response::File(b) => b,
-            Response::Directory(q, ref s, is_root) => {
+            Response::Directory {
+                query: q,
+                data: ref s,
+                is_root,
+            } => {
                 &if is_root {
                     self.session.template.welcome(
                         Some(s),
@@ -130,23 +134,23 @@ impl Connection {
                     )
                 }
             }
-            Response::InternalServerError(q, e) => {
+            Response::InternalServerError { query, error } => {
                 eprintln!(
-                    "[{}] > [{}] `{q:?}`: internal server error: `{e}`",
+                    "[{}] > [{}] `{query:?}`: internal server error: `{error}`",
                     self.address.server, self.address.client
                 );
                 self.session.template.internal_server_error()
             }
-            Response::AccessDenied(q) => {
+            Response::AccessDenied { query } => {
                 eprintln!(
-                    "[{}] < [{}] access to `{q}` denied.",
+                    "[{}] < [{}] access to `{query}` denied.",
                     self.address.server, self.address.client
                 );
                 self.session.template.access_denied()
             }
-            Response::NotFound(q) => {
+            Response::NotFound { query } => {
                 eprintln!(
-                    "[{}] < [{}] requested resource `{q}` not found.",
+                    "[{}] < [{}] requested resource `{query}` not found.",
                     self.address.server, self.address.client
                 );
                 self.session.template.not_found()
