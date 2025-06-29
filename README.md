@@ -8,6 +8,9 @@
 
 * Run IPv4/IPv6 server accessible to Internet, [Yggdrasil](https://yggdrasil-network.github.io/), [Mycelium](https://github.com/threefoldtech/mycelium), and other networks simultaneously, as many as desired;
 * Optimized for streaming large files (in chunks) without memory overload on buffering the data;
+* Customizable templates for the directory index locations;
+* Build-in daily requests counter for the current session with template macro support;
+* Detailed debug logs with `StandardOutput` and `StandardError` separation;
 * Supports the [CLF](https://en.wikipedia.org/wiki/Common_Log_Format) access log, which is compatible with analytics tools such as [GoAccess](https://goaccess.io/), [GoatCounter](https://www.goatcounter.com/) or just [htcount](https://github.com/yggverse/htcount);
 * Custom templates for various server response types;
 * See the [Options](#options) section for a complete list of other features.
