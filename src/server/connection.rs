@@ -124,6 +124,12 @@ impl Connection {
                         bytes.len()
                     )
                 }
+                if let Err(e) = self.stream.flush() {
+                    eprintln!(
+                        "[{}] ! [{}] failed to flush the stream: `{e}`",
+                        self.address.server, self.address.client,
+                    )
+                }
             }
             Err(e) => eprintln!(
                 "[{}] ! [{}] failed to response: `{e}`",
