@@ -150,7 +150,7 @@ pub struct Config {
     /// Time format for listing items
     ///
     /// * use escape notation for `%` e.g. `"%%Y-%%m-%%d %%H:%%M:%%S"`
-    #[arg(long, default_value_t = String::from("%Y-%m-%d %H:%M:%S"))]
+    #[arg(long, default_value_t = String::from("%Y/%m/%d"))]
     pub list_time_format: String,
 
     /// Optimize memory usage on reading large files or stream
