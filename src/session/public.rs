@@ -186,9 +186,6 @@ impl Public {
             r.push({
                 let mut l = format!("=> {}/", encode(&dir.name)); // link
                 let mut a = Vec::new(); // alt
-                if dc.alt.is_count {
-                    a.push(dir.count.to_string());
-                }
                 if dc.alt.time.is_accessed {
                     a.push(self.t(dir.meta.atime()))
                 }
@@ -197,6 +194,9 @@ impl Public {
                 }
                 if dc.alt.time.is_modified {
                     a.push(self.t(dir.meta.mtime()))
+                }
+                if dc.alt.is_count {
+                    a.push(dir.count.to_string());
                 }
                 // @TODO modified, accessed, created etc.
                 if !a.is_empty() {
@@ -227,9 +227,6 @@ impl Public {
             r.push({
                 let mut l = format!("=> {}", encode(&file.name)); // link
                 let mut a = Vec::new(); // alt
-                if fc.alt.is_size {
-                    a.push(b(file.meta.size()))
-                }
                 if fc.alt.time.is_accessed {
                     a.push(self.t(file.meta.atime()))
                 }
@@ -238,6 +235,9 @@ impl Public {
                 }
                 if fc.alt.time.is_modified {
                     a.push(self.t(file.meta.mtime()))
+                }
+                if fc.alt.is_size {
+                    a.push(b(file.meta.size()))
                 }
                 if !a.is_empty() {
                     l.push_str(&format!(" ({})", a.join(",")));
