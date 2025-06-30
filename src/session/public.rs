@@ -200,7 +200,7 @@ impl Public {
                 }
                 // @TODO modified, accessed, created etc.
                 if !a.is_empty() {
-                    l.push_str(&format!(" ({})", a.join(",")));
+                    l.push_str(&format!(" ({})", a.join(", ")));
                 }
                 l
             })
@@ -240,7 +240,7 @@ impl Public {
                     a.push(b(file.meta.size()))
                 }
                 if !a.is_empty() {
-                    l.push_str(&format!(" ({})", a.join(",")));
+                    l.push_str(&format!(" ({})", a.join(", ")));
                 }
                 l
             })
