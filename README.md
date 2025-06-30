@@ -145,7 +145,7 @@ nexy -p /path/to/public_dir
 
         * use escape notation for `%` e.g. `"%%Y-%%m-%%d %%H:%%M:%%S"`
 
-        [default: "%Y-%m-%d %H:%M:%S"]
+        [default: "%Y/%m/%d"]
 
 -r, --read-chunk <READ_CHUNK>
         Optimize memory usage on reading large files or stream
