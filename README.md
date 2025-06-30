@@ -4,6 +4,8 @@
 [![Dependencies](https://deps.rs/repo/github/yggverse/nexy/status.svg)](https://deps.rs/repo/github/yggverse/nexy)
 [![crates.io](https://img.shields.io/crates/v/nexy)](https://crates.io/crates/nexy)
 
+![Nexy UI](https://github.com/user-attachments/assets/3df0f044-0e13-4433-9e2d-77b6b725a884)
+
 ## Features
 
 * Run IPv4/IPv6 server accessible to Internet, [Yggdrasil](https://yggdrasil-network.github.io/), [Mycelium](https://github.com/threefoldtech/mycelium), and other networks simultaneously, as many as desired;
