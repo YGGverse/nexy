@@ -240,9 +240,17 @@ impl Public {
                 if fc.alt.is_size {
                     a.push(b(file.meta.size()))
                 }
+                if !l.ends_with('/') {
+                    for p in &fc.append_slash {
+                        if p.is_match(&l) {
+                            l.push('/');
+                            break;
+                        }
+                    }
+                }
                 if !a.is_empty() {
                     l.push(' ');
-                    l.push_str(&a.join(", "));
+                    l.push_str(&a.join(", "))
                 }
                 l
             })

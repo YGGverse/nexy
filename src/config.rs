@@ -147,6 +147,10 @@ pub struct Config {
     #[arg(long, default_value_t = false)]
     pub list_file_reverse: bool,
 
+    /// Append trailing slash to files match regex pattern(s)
+    #[arg(long)]
+    pub list_file_slash: Vec<String>,
+
     /// Time format for listing items
     ///
     /// * use escape notation for `%` e.g. `"%%Y-%%m-%%d %%H:%%M:%%S"`

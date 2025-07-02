@@ -36,125 +36,128 @@ nexy -p /path/to/public_dir
 ### Options
 
 ``` bash
--a, --access-log <ACCESS_LOG>
-        Absolute path to the access log file
+  -a, --access-log <ACCESS_LOG>
+          Absolute path to the access log file
 
--b, --bind <BIND>
-        Bind server(s) `host:port` to listen incoming connections
+  -b, --bind <BIND>
+          Bind server(s) `host:port` to listen incoming connections
 
-        * use `[host]:port` notation for IPv6
+          * use `[host]:port` notation for IPv6
 
-        [default: 127.0.0.1:1900 [::1]:1900]
+          [default: 127.0.0.1:1900 [::1]:1900]
 
--d, --debug
-        Print debug information
+  -d, --debug
+          Print debug information
 
--p, --public <PUBLIC>
-        Absolute path to the public files directory
+  -p, --public <PUBLIC>
+          Absolute path to the public files directory
 
---show-hidden
-        Show hidden entries (in the directory listing)
+      --show-hidden
+          Show hidden entries (in the directory listing)
 
-        * Important: this option does not prevent access to hidden files!
+          * Important: this option does not prevent access to hidden files!
 
---template-access-denied <TEMPLATE_ACCESS_DENIED>
-        Absolute path to the `Access denied` template file
+      --template-access-denied <TEMPLATE_ACCESS_DENIED>
+          Absolute path to the `Access denied` template file
 
-        * this template file can be in binary format (e.g. image)
+          * this template file can be in binary format (e.g. image)
 
---template-internal-server-error <TEMPLATE_INTERNAL_SERVER_ERROR>
-        Absolute path to the `Internal server error` template file
+      --template-internal-server-error <TEMPLATE_INTERNAL_SERVER_ERROR>
+          Absolute path to the `Internal server error` template file
 
-        * this template file can be in binary format (e.g. image)
+          * this template file can be in binary format (e.g. image)
 
---template-not-found <TEMPLATE_NOT_FOUND>
-        Absolute path to the `Not found` template file
+      --template-not-found <TEMPLATE_NOT_FOUND>
+          Absolute path to the `Not found` template file
 
-        * this template file can be in binary format (e.g. image)
+          * this template file can be in binary format (e.g. image)
 
---template-welcome <TEMPLATE_WELCOME>
-        Absolute path to the `Welcome` template file. Unlike `template-index`, this applies only to the `public` location
+      --template-welcome <TEMPLATE_WELCOME>
+          Absolute path to the `Welcome` template file. Unlike `template-index`, this applies only to the `public` location
 
-        * this template file expects pattern and cannot be in binary format
+          * this template file expects pattern and cannot be in binary format
 
-        **Patterns** * `{list}` - entries list for the `public` directory * `{hosts}` - unique visitors count * `{hits}` - requests count
+          **Patterns** * `{list}` - entries list for the `public` directory * `{hosts}` - unique visitors count * `{hits}` - requests count
 
---template-index <TEMPLATE_INDEX>
-        Absolute path to the `Index` template file for each directory
+      --template-index <TEMPLATE_INDEX>
+          Absolute path to the `Index` template file for each directory
 
-        * this template file expects pattern and cannot be in binary format
+          * this template file expects pattern and cannot be in binary format
 
-        **Patterns** * `{list}` - entries list for the current directory * `{hosts}` - unique visitors count * `{hits}` - requests count
+          **Patterns** * `{list}` - entries list for the current directory * `{hosts}` - unique visitors count * `{hits}` - requests count
 
---list-dir-show-count
-        Show files count in dir (as the alternative text for navigation links)
+      --list-dir-show-count
+          Show files count in dir (as the alternative text for navigation links)
 
---list-dir-show-accessed
-        Show directory accessed time
+      --list-dir-show-accessed
+          Show directory accessed time
 
---list-dir-show-created
-        Show directory created time
+      --list-dir-show-created
+          Show directory created time
 
---list-dir-show-modified
-        Show directory modified time
+      --list-dir-show-modified
+          Show directory modified time
 
---list-dir-sort-by-accessed
-        Sort dirs by time accessed (name by default)
+      --list-dir-sort-by-accessed
+          Sort dirs by time accessed (name by default)
 
---list-dir-sort-by-created
-        Sort dirs by time created (name by default)
+      --list-dir-sort-by-created
+          Sort dirs by time created (name by default)
 
---list-dir-sort-by-modified
-        Sort dirs by time modified (name by default)
+      --list-dir-sort-by-modified
+          Sort dirs by time modified (name by default)
 
---list-dir-sort-by-count
-        Sort dirs by count (name by default)
+      --list-dir-sort-by-count
+          Sort dirs by count (name by default)
 
---list-dir-reverse
-        Sort directories in list DESC (ASC by default)
+      --list-dir-reverse
+          Sort directories in list DESC (ASC by default)
 
---list-file-show-size
-        Show file size in list (as the alternative text for navigation links)
+      --list-file-show-size
+          Show file size in list (as the alternative text for navigation links)
 
---list-file-show-accessed
-        Show file accessed time
+      --list-file-show-accessed
+          Show file accessed time
 
---list-file-show-created
-        Show file created time
+      --list-file-show-created
+          Show file created time
 
---list-file-show-modified
-        Show file modified time
+      --list-file-show-modified
+          Show file modified time
 
---list-file-sort-by-accessed
-        Sort files by time accessed (name by default)
+      --list-file-sort-by-accessed
+          Sort files by time accessed (name by default)
 
---list-file-sort-by-created
-        Sort files by time created (name by default)
+      --list-file-sort-by-created
+          Sort files by time created (name by default)
 
---list-file-sort-by-modified
-        Sort files by time modified (name by default)
+      --list-file-sort-by-modified
+          Sort files by time modified (name by default)
 
---list-file-sort-by-size
-        Sort files by size (name by default)
+      --list-file-sort-by-size
+          Sort files by size (name by default)
 
---list-file-reverse
-        Sort files in list DESC (ASC by default)
+      --list-file-reverse
+          Sort files in list DESC (ASC by default)
 
---list-time-format <LIST_TIME_FORMAT>
-        Time format for listing items
+      --list-file-slash <LIST_FILE_SLASH>
+          Append trailing slash to files match regex pattern(s)
 
-        * use escape notation for `%` e.g. `"%%Y-%%m-%%d %%H:%%M:%%S"`
+      --list-time-format <LIST_TIME_FORMAT>
+          Time format for listing items
 
-        [default: "%Y/%m/%d"]
+          * use escape notation for `%` e.g. `"%%Y-%%m-%%d %%H:%%M:%%S"`
 
--r, --read-chunk <READ_CHUNK>
-        Optimize memory usage on reading large files or stream
+          [default: %Y/%m/%d]
 
-        [default: 1024]
+  -r, --read-chunk <READ_CHUNK>
+          Optimize memory usage on reading large files or stream
 
--h, --help
-        Print help (see a summary with '-h')
+          [default: 1024]
 
--V, --version
-        Print version
+  -h, --help
+          Print help (see a summary with '-h')
+
+  -V, --version
+          Print version
 ```

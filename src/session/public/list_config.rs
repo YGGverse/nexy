@@ -2,6 +2,8 @@
 //! valid listing configuration from the plain `clap` arguments list.
 //! This feature is evolving, and it may require refactoring in the future.
 
+use regex::Regex;
+
 pub struct Time {
     pub is_accessed: bool,
     pub is_created: bool,
@@ -35,6 +37,7 @@ pub struct Dir {
 }
 pub struct File {
     pub alt: FileAlt,
+    pub append_slash: Vec<Regex>,
     pub is_reverse: bool,
     pub sort: FileSort,
 }
@@ -103,6 +106,13 @@ impl ListConfig {
                     is_size: config.list_file_show_size,
                 },
                 is_reverse: config.list_file_reverse,
+                append_slash: {
+                    let mut p = Vec::with_capacity(config.list_file_slash.len());
+                    for pattern in &config.list_file_slash {
+                        p.push(Regex::new(pattern)?)
+                    }
+                    p
+                },
                 sort: FileSort {
                     time: Time {
                         is_accessed: config.list_file_sort_by_accessed,
