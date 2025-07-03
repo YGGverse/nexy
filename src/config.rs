@@ -157,6 +157,10 @@ pub struct Config {
     #[arg(long, default_value_t = String::from("%Y/%m/%d"))]
     pub list_time_format: String,
 
+    /// Encode listing URL match regex pattern (use `.*` for all entries)
+    #[arg(long)]
+    pub list_url_encode: Option<String>,
+
     /// Optimize memory usage on reading large files or stream
     #[arg(short, long, default_value_t = 1024)]
     pub read_chunk: usize,

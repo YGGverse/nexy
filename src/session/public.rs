@@ -184,7 +184,18 @@ impl Public {
         }
         for dir in dirs {
             r.push({
-                let mut l = format!("=> {}/", encode(&dir.name)); // link
+                let mut l = format!(
+                    "=> {}/",
+                    self.list_config
+                        .list_url_encode
+                        .as_ref()
+                        .and_then(|r| if r.is_match(&dir.name) {
+                            Some(encode(&dir.name).to_string())
+                        } else {
+                            None
+                        })
+                        .unwrap_or(dir.name)
+                ); // link
                 let mut a = Vec::new(); // alt
                 if dc.alt.time.is_accessed {
                     a.push(self.t(dir.meta.atime()))
@@ -226,7 +237,18 @@ impl Public {
         }
         for file in files {
             r.push({
-                let mut l = format!("=> {}", encode(&file.name)); // link
+                let mut l = format!(
+                    "=> {}",
+                    self.list_config
+                        .list_url_encode
+                        .as_ref()
+                        .and_then(|r| if r.is_match(&file.name) {
+                            Some(encode(&file.name).to_string())
+                        } else {
+                            None
+                        })
+                        .unwrap_or(file.name)
+                ); // link
                 let mut a = Vec::new(); // alt
                 if fc.alt.time.is_accessed {
                     a.push(self.t(file.meta.atime()))

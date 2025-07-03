@@ -77,14 +77,20 @@ nexy -p /path/to/public_dir
 
           * this template file expects pattern and cannot be in binary format
 
-          **Patterns** * `{list}` - entries list for the `public` directory * `{hosts}` - unique visitors count * `{hits}` - requests count
+          **Patterns**
+          * `{list}` - entries list for the `public` directory
+          * `{hosts}` - unique visitors count
+          * `{hits}` - requests count
 
       --template-index <TEMPLATE_INDEX>
           Absolute path to the `Index` template file for each directory
 
           * this template file expects pattern and cannot be in binary format
 
-          **Patterns** * `{list}` - entries list for the current directory * `{hosts}` - unique visitors count * `{hits}` - requests count
+          **Patterns**
+          * `{list}` - entries list for the current directory
+          * `{hosts}` - unique visitors count
+          * `{hits}` - requests count
 
       --list-dir-show-count
           Show files count in dir (as the alternative text for navigation links)
@@ -149,6 +155,9 @@ nexy -p /path/to/public_dir
           * use escape notation for `%` e.g. `"%%Y-%%m-%%d %%H:%%M:%%S"`
 
           [default: %Y/%m/%d]
+
+      --list-url-encode <LIST_URL_ENCODE>
+          Encode listing URL match regex pattern (use `.*` for all entries)
 
   -r, --read-chunk <READ_CHUNK>
           Optimize memory usage on reading large files or stream
