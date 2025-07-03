@@ -152,7 +152,14 @@ impl Public {
                 (true, _) => dirs.push(Dir {
                     meta,
                     name,
-                    count: fs::read_dir(e.path()).map_or(0, |i| i.count()),
+                    count: fs::read_dir(e.path()).map_or(0, |i| {
+                        i.filter_map(Result::ok)
+                            .filter(|e| {
+                                self.show_hidden
+                                    || !e.file_name().to_string_lossy().starts_with('.')
+                            })
+                            .count()
+                    }),
                 }),
                 (_, true) => files.push(File { meta, name }),
                 _ => continue, // @TODO symlinks support?
