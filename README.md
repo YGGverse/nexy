@@ -165,4 +165,4 @@ nexy -p /path/to/public_dir
 ## See also
 
 * [Yoda](https://github.com/YGGverse/Yoda) - Client for the Gemini & Nex protocols, written in Rust
-* [snac2nex](https://crates.io/crates/snac2nex) - Export Snac profiles to the Nex blog format
+* [snac2nex](https://crates.io/crates/snac2nex) - Export [Snac](https://codeberg.org/grunfink/snac2) profiles to the Nex blog format
