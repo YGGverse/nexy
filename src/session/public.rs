@@ -54,7 +54,12 @@ impl Public {
                     }
                     c
                 }
-                Err(_) => return callback(Response::NotFound { query }),
+                Err(e) => {
+                    return callback(Response::NotFound {
+                        query,
+                        error: e.to_string(),
+                    });
+                }
             }
         };
         match fs::metadata(&p) {

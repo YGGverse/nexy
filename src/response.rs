@@ -9,6 +9,7 @@ pub enum Response<'a> {
     },
     NotFound {
         query: &'a str,
+        error: String,
     },
     File(&'a [u8]),
     Directory {

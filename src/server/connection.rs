@@ -148,9 +148,9 @@ impl Connection {
                 );
                 self.session.template.access_denied()
             }
-            Response::NotFound { query } => {
+            Response::NotFound { query, error } => {
                 eprintln!(
-                    "[{}] < [{}] requested resource `{query}` not found.",
+                    "[{}] < [{}] requested resource `{query}` not found: {error}.",
                     self.address.server, self.address.client
                 );
                 self.session.template.not_found()
