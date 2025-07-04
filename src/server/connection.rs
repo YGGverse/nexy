@@ -73,11 +73,12 @@ impl Connection {
                 }
             }
             Err(e) => match self.response(Response::InternalServerError {
-                query: None,
                 error: format!(
                     "[{}] < [{}] failed to handle incoming request: `{e}`",
                     self.address.server, self.address.client
                 ),
+                path: None,
+                query: None,
             }) {
                 Ok(sent) => {
                     t += sent;
@@ -134,10 +135,12 @@ impl Connection {
                     )
                 }
             }
-            Response::InternalServerError { query, error } => {
+            Response::InternalServerError { error, path, query } => {
                 eprintln!(
-                    "[{}] > [{}] `{query:?}`: internal server error: `{error}`",
-                    self.address.server, self.address.client
+                    "[{}] > [{}] `{query:?}` (`{:?}`): internal server error: `{error}`",
+                    self.address.server,
+                    self.address.client,
+                    path.map(|p| p.to_string_lossy().to_string()),
                 );
                 self.session.template.internal_server_error()
             }

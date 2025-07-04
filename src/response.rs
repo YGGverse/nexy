@@ -9,6 +9,7 @@ pub enum Response<'a> {
     },
     InternalServerError {
         error: String,
+        path: Option<PathBuf>,
         query: Option<&'a str>,
     },
     NotFound {

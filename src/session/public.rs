@@ -43,7 +43,7 @@ impl Public {
     }
 
     pub fn request(&self, query: &str, mut callback: impl FnMut(Response) -> bool) -> bool {
-        let p = {
+        let path = {
             // access restriction zone, change carefully!
             let mut path = PathBuf::from(&self.public_dir);
             path.push(query.trim_matches('/'));
@@ -67,20 +67,21 @@ impl Public {
                 }
             }
         };
-        match fs::metadata(&p) {
+        match fs::metadata(&path) {
             Ok(t) => match (t.is_dir(), t.is_file()) {
-                (true, _) => callback(match self.list(&p) {
+                (true, _) => callback(match self.list(&path) {
                     Ok(data) => Response::Directory {
                         query,
                         data,
-                        is_root: p == self.public_dir,
+                        is_root: path == self.public_dir,
                     },
                     Err(e) => Response::InternalServerError {
-                        query: Some(query),
                         error: e.to_string(),
+                        path: Some(path),
+                        query: Some(query),
                     },
                 }),
-                (_, true) => match fs::File::open(p) {
+                (_, true) => match fs::File::open(&path) {
                     Ok(mut f) => loop {
                         let mut b = vec![0; self.read_chunk];
                         match f.read(&mut b) {
@@ -92,22 +93,25 @@ impl Public {
                             }
                             Err(e) => {
                                 return callback(Response::InternalServerError {
-                                    query: Some(query),
                                     error: format!("failed to read response chunk: `{e}`"),
+                                    path: Some(path),
+                                    query: Some(query),
                                 });
                             }
                         }
                     },
                     Err(e) => callback(Response::InternalServerError {
-                        query: Some(query),
                         error: format!("failed to read response: `{e}`"),
+                        path: Some(path),
+                        query: Some(query),
                     }),
                 },
                 _ => panic!(), // unexpected
             },
             Err(e) => callback(Response::InternalServerError {
-                query: Some(query),
                 error: format!("failed to read storage: `{e}`"),
+                path: Some(path),
+                query: Some(query),
             }),
         }
     }
