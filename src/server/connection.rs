@@ -141,10 +141,12 @@ impl Connection {
                 );
                 self.session.template.internal_server_error()
             }
-            Response::AccessDenied { query } => {
+            Response::AccessDenied { query, path } => {
                 eprintln!(
-                    "[{}] < [{}] access to `{query}` denied.",
-                    self.address.server, self.address.client
+                    "[{}] < [{}] access to `{query}` denied (resolved path: `{}`).",
+                    self.address.server,
+                    self.address.client,
+                    path.to_string_lossy()
                 );
                 self.session.template.access_denied()
             }

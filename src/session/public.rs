@@ -50,7 +50,7 @@ impl Public {
             match p.canonicalize() {
                 Ok(c) => {
                     if !c.starts_with(&self.public_dir) {
-                        return callback(Response::AccessDenied { query });
+                        return callback(Response::AccessDenied { query, path: c });
                     }
                     c
                 }
