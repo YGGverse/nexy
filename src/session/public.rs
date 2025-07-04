@@ -48,11 +48,11 @@ impl Public {
             let mut p = PathBuf::from(&self.public_dir);
             p.push(query.trim_matches('/'));
             match p.canonicalize() {
-                Ok(c) => {
-                    if !c.starts_with(&self.public_dir) {
-                        return callback(Response::AccessDenied { query, path: c });
+                Ok(path) => {
+                    if !path.starts_with(&self.public_dir) {
+                        return callback(Response::AccessDenied { query, path });
                     }
-                    c
+                    path
                 }
                 Err(e) => {
                     return callback(Response::NotFound {
