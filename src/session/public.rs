@@ -45,19 +45,24 @@ impl Public {
     pub fn request(&self, query: &str, mut callback: impl FnMut(Response) -> bool) -> bool {
         let p = {
             // access restriction zone, change carefully!
-            let mut p = PathBuf::from(&self.public_dir);
-            p.push(query.trim_matches('/'));
-            match p.canonicalize() {
-                Ok(path) => {
-                    if !path.starts_with(&self.public_dir) {
-                        return callback(Response::AccessDenied { query, path });
+            let mut path = PathBuf::from(&self.public_dir);
+            path.push(query.trim_matches('/'));
+            match path.canonicalize() {
+                Ok(canonical) => {
+                    if !canonical.starts_with(&self.public_dir) {
+                        return callback(Response::AccessDenied {
+                            canonical,
+                            path,
+                            query,
+                        });
                     }
-                    path
+                    canonical
                 }
                 Err(e) => {
                     return callback(Response::NotFound {
-                        query,
                         error: e.to_string(),
+                        path,
+                        query,
                     });
                 }
             }

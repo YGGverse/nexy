@@ -141,19 +141,26 @@ impl Connection {
                 );
                 self.session.template.internal_server_error()
             }
-            Response::AccessDenied { query, path } => {
+            Response::AccessDenied {
+                canonical,
+                path,
+                query,
+            } => {
                 eprintln!(
-                    "[{}] < [{}] access to `{query}` denied (resolved path: `{}`).",
+                    "[{}] < [{}] access denied: `{query}` (path: `{}` / canonical path: `{}`)",
                     self.address.server,
                     self.address.client,
-                    path.to_string_lossy()
+                    path.to_string_lossy(),
+                    canonical.to_string_lossy()
                 );
                 self.session.template.access_denied()
             }
-            Response::NotFound { query, error } => {
+            Response::NotFound { error, path, query } => {
                 eprintln!(
-                    "[{}] < [{}] requested resource `{query}` not found: {error}.",
-                    self.address.server, self.address.client
+                    "[{}] < [{}] not found: `{query}` (`{}`) reason: {error}",
+                    self.address.server,
+                    self.address.client,
+                    path.to_string_lossy()
                 );
                 self.session.template.not_found()
             }
