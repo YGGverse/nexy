@@ -141,7 +141,7 @@ impl Connection {
                 query,
             } => {
                 eprintln!(
-                    "[{}] > [{}] `{query:?}` (`{:?}`): internal server error: `{message}`",
+                    "[{}] > [{}] internal server error: `{message}` query: `{query:?}` path: `{:?}`",
                     self.address.server,
                     self.address.client,
                     path.map(|p| p.to_string_lossy().to_string()),
