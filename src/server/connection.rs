@@ -147,7 +147,7 @@ impl Connection {
                 query,
             } => {
                 eprintln!(
-                    "[{}] < [{}] access denied: `{query}` (path: `{}` / canonical path: `{}`)",
+                    "[{}] < [{}] access denied: `{query}` (original: `{}` / canonical: `{}`)",
                     self.address.server,
                     self.address.client,
                     path.to_string_lossy(),
