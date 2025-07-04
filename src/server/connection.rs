@@ -73,7 +73,7 @@ impl Connection {
                 }
             }
             Err(e) => match self.response(Response::InternalServerError {
-                error: format!(
+                message: format!(
                     "[{}] < [{}] failed to handle incoming request: `{e}`",
                     self.address.server, self.address.client
                 ),
@@ -135,9 +135,13 @@ impl Connection {
                     )
                 }
             }
-            Response::InternalServerError { error, path, query } => {
+            Response::InternalServerError {
+                message,
+                path,
+                query,
+            } => {
                 eprintln!(
-                    "[{}] > [{}] `{query:?}` (`{:?}`): internal server error: `{error}`",
+                    "[{}] > [{}] `{query:?}` (`{:?}`): internal server error: `{message}`",
                     self.address.server,
                     self.address.client,
                     path.map(|p| p.to_string_lossy().to_string()),
@@ -158,9 +162,13 @@ impl Connection {
                 );
                 self.session.template.access_denied()
             }
-            Response::NotFound { error, path, query } => {
+            Response::NotFound {
+                message,
+                path,
+                query,
+            } => {
                 eprintln!(
-                    "[{}] < [{}] not found: `{query}` (`{}`) reason: {error}",
+                    "[{}] < [{}] not found: `{query}` (`{}`) reason: {message}",
                     self.address.server,
                     self.address.client,
                     path.to_string_lossy()

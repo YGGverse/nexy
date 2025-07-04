@@ -60,7 +60,7 @@ impl Public {
                 }
                 Err(e) => {
                     return callback(Response::NotFound {
-                        error: e.to_string(),
+                        message: e.to_string(),
                         path,
                         query,
                     });
@@ -76,7 +76,7 @@ impl Public {
                         is_root: path == self.public_dir,
                     },
                     Err(e) => Response::InternalServerError {
-                        error: e.to_string(),
+                        message: e.to_string(),
                         path: Some(path),
                         query: Some(query),
                     },
@@ -93,7 +93,7 @@ impl Public {
                             }
                             Err(e) => {
                                 return callback(Response::InternalServerError {
-                                    error: format!("failed to read response chunk: `{e}`"),
+                                    message: format!("failed to read response chunk: `{e}`"),
                                     path: Some(path),
                                     query: Some(query),
                                 });
@@ -101,7 +101,7 @@ impl Public {
                         }
                     },
                     Err(e) => callback(Response::InternalServerError {
-                        error: format!("failed to read response: `{e}`"),
+                        message: format!("failed to read response: `{e}`"),
                         path: Some(path),
                         query: Some(query),
                     }),
@@ -109,7 +109,7 @@ impl Public {
                 _ => panic!(), // unexpected
             },
             Err(e) => callback(Response::InternalServerError {
-                error: format!("failed to read storage: `{e}`"),
+                message: format!("failed to read storage: `{e}`"),
                 path: Some(path),
                 query: Some(query),
             }),

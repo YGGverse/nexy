@@ -8,12 +8,12 @@ pub enum Response<'a> {
         query: &'a str,
     },
     InternalServerError {
-        error: String,
+        message: String,
         path: Option<PathBuf>,
         query: Option<&'a str>,
     },
     NotFound {
-        error: String,
+        message: String,
         path: PathBuf,
         query: &'a str,
     },
