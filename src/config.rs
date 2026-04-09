@@ -20,10 +20,6 @@ pub struct Config {
     ])]
     pub bind: Vec<String>,
 
-    /// Print debug information
-    #[arg(short, long, default_value_t = false)]
-    pub debug: bool,
-
     /// Absolute path to the public files directory
     #[arg(short, long)]
     pub public: String,

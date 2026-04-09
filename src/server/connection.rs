@@ -1,5 +1,6 @@
 use crate::{response::Response, session::Session};
 use anyhow::Result;
+use log::*;
 use std::{
     io::{ErrorKind, Read, Write},
     net::{SocketAddr, TcpStream},
@@ -35,21 +36,17 @@ impl Connection {
         let mut t = 0; // total bytes
         match self.request() {
             Ok(q) => {
-                if self.session.is_debug {
-                    println!(
-                        "[{}] < [{}] incoming request: `{q}`",
-                        self.address.server, self.address.client
-                    )
-                }
+                debug!(
+                    "[{}] < [{}] incoming request: `{q}`",
+                    self.address.server, self.address.client
+                );
                 if self.session.clone().public.request(&q, |response| {
                     self.response(response).is_ok_and(|sent| {
                         t += sent;
-                        if self.session.is_debug {
-                            println!(
-                                "[{}] > [{}] sent {sent} ({t} total) bytes response.",
-                                self.address.server, self.address.client
-                            )
-                        };
+                        debug!(
+                            "[{}] > [{}] sent {sent} ({t} total) bytes response.",
+                            self.address.server, self.address.client
+                        );
                         true
                     })
                 }) {
@@ -61,12 +58,10 @@ impl Connection {
                     if let Some(ref a) = self.session.access_log {
                         a.clf(&self.address.client, Some(&q), 1, t)
                     }
-                    if self.session.is_debug {
-                        println!(
-                            "[{}] - [{}] connection closed by client.",
-                            self.address.server, self.address.client,
-                        )
-                    }
+                    debug!(
+                        "[{}] - [{}] connection closed by client.",
+                        self.address.server, self.address.client,
+                    )
                 }
             }
             Err(e) => match self.response(Response::InternalServerError {
@@ -79,20 +74,18 @@ impl Connection {
             }) {
                 Ok(sent) => {
                     t += sent;
-                    if self.session.is_debug {
-                        println!(
-                            "[{}] > [{}] sent {sent} ({t} total) bytes response.",
-                            self.address.server, self.address.client
-                        )
-                    };
+                    debug!(
+                        "[{}] > [{}] sent {sent} ({t} total) bytes response.",
+                        self.address.server, self.address.client
+                    );
                     if let Some(ref a) = self.session.access_log {
                         a.clf(&self.address.client, None, 2, t)
                     }
                     self.shutdown()
                 }
                 Err(e) => {
-                    eprintln!(
-                        "[{}] > [{}] handle request error: `{e}`",
+                    error!(
+                        "[{}] > [{}] request handle error: `{e}`",
                         self.address.server, self.address.client
                     );
                     if let Some(ref a) = self.session.access_log {
@@ -128,7 +121,7 @@ impl Connection {
                 path,
                 query,
             } => {
-                eprintln!(
+                error!(
                     "[{}] > [{}] internal server error: `{message}` query: `{query:?}` path: `{:?}`",
                     self.address.server,
                     self.address.client,
@@ -141,7 +134,7 @@ impl Connection {
                 path,
                 query,
             } => {
-                eprintln!(
+                error!(
                     "[{}] < [{}] access denied: `{query}` (original: `{}` / canonical: `{}`)",
                     self.address.server,
                     self.address.client,
@@ -155,7 +148,7 @@ impl Connection {
                 path,
                 query,
             } => {
-                eprintln!(
+                error!(
                     "[{}] < [{}] not found: `{query}` (`{}`) reason: {message}",
                     self.address.server,
                     self.address.client,
@@ -172,7 +165,7 @@ impl Connection {
             Err(e) => {
                 // client may close the active connection unexpectedly, ignore some kinds
                 if !matches!(e.kind(), ErrorKind::BrokenPipe | ErrorKind::ConnectionReset) {
-                    eprintln!(
+                    error!(
                         "[{}] > [{}] error sending response: `{e}`",
                         self.address.server, self.address.client
                     )
@@ -184,15 +177,11 @@ impl Connection {
 
     fn shutdown(self) {
         match self.stream.shutdown(std::net::Shutdown::Both) {
-            Ok(()) => {
-                if self.session.is_debug {
-                    println!(
-                        "[{}] - [{}] connection closed by server.",
-                        self.address.server, self.address.client,
-                    )
-                }
-            }
-            Err(e) => eprintln!(
+            Ok(()) => debug!(
+                "[{}] - [{}] connection closed by server.",
+                self.address.server, self.address.client,
+            ),
+            Err(e) => warn!(
                 "[{}] > [{}] failed to close connection: `{e}`",
                 self.address.server, self.address.client,
             ),

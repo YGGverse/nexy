@@ -9,7 +9,6 @@ pub struct Session {
     pub access_log: Option<AccessLog>,
     pub public: Public,
     pub template: Template,
-    pub is_debug: bool,
 }
 
 impl Session {
@@ -19,7 +18,6 @@ impl Session {
             access_log: AccessLog::init(config)?,
             public: Public::init(config)?,
             template,
-            is_debug: config.debug,
         })
     }
 }

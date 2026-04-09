@@ -15,7 +15,6 @@
 * [x] Optimized for streaming large files (in chunks) without memory overload on buffering the data;
 * [x] Customizable templates for the directory index locations;
 * [x] Build-in daily requests counter for the current session with template macro support;
-* [x] Detailed debug logs with `StandardOutput` and `StandardError` separation;
 * [x] Supports the [CLF](https://en.wikipedia.org/wiki/Common_Log_Format) access log, which is compatible with analytics tools such as [GoAccess](https://goaccess.io/), [GoatCounter](https://www.goatcounter.com/) or just [htcount](https://github.com/yggverse/htcount);
 * [x] Custom templates for various server response types;
 * [ ] Soft links support (requires regex option for canonical path resolver)
@@ -35,7 +34,7 @@
 > For more examples, visit the project [Wiki](https://github.com/YGGverse/nexy/wiki)
 
 ``` bash
-nexy -p /path/to/public_dir
+RUST_LOG=nexy=DEBUG nexy -p /path/to/public_dir
 ```
 * by default, server starts on localhost; change it with the `--bind` option(s)
 
@@ -51,9 +50,6 @@ nexy -p /path/to/public_dir
           * use `[host]:port` notation for IPv6
 
           [default: 127.0.0.1:1900 [::1]:1900]
-
-  -d, --debug
-          Print debug information
 
   -p, --public <PUBLIC>
           Absolute path to the public files directory
