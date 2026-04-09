@@ -85,8 +85,6 @@ nexy -p /path/to/public_dir
 
           **Patterns**
           * `{list}` - entries list for the `public` directory
-          * `{hosts}` - unique visitors count
-          * `{hits}` - requests count
 
       --template-index <TEMPLATE_INDEX>
           Absolute path to the `Index` template file for each directory
@@ -95,8 +93,6 @@ nexy -p /path/to/public_dir
 
           **Patterns**
           * `{list}` - entries list for the current directory
-          * `{hosts}` - unique visitors count
-          * `{hits}` - requests count
 
       --list-dir-show-count
           Show files count in dir (as the alternative text for navigation links)

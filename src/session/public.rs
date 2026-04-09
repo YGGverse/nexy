@@ -71,7 +71,6 @@ impl Public {
             Ok(t) => match (t.is_dir(), t.is_file()) {
                 (true, _) => callback(match self.list(&path) {
                     Ok(data) => Response::Directory {
-                        query,
                         data,
                         is_root: path == self.public_dir,
                     },

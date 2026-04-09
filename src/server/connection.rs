@@ -41,9 +41,6 @@ impl Connection {
                         self.address.server, self.address.client
                     )
                 }
-                if let Some(ref request) = self.session.request {
-                    request.add(&self.address.client, &q)
-                }
                 if self.session.clone().public.request(&q, |response| {
                     self.response(response).is_ok_and(|sent| {
                         t += sent;
@@ -117,22 +114,13 @@ impl Connection {
         let data = match response {
             Response::File(b) => b,
             Response::Directory {
-                query: q,
                 data: ref s,
                 is_root,
             } => {
                 &if is_root {
-                    self.session.template.welcome(
-                        Some(s),
-                        self.session.request.as_ref().map(|i| i.count()),
-                        self.session.request.as_ref().map(|i| i.total(None)),
-                    )
+                    self.session.template.welcome(Some(s))
                 } else {
-                    self.session.template.index(
-                        Some(s),
-                        self.session.request.as_ref().map(|i| i.count()),
-                        self.session.request.as_ref().map(|i| i.total(Some(q))),
-                    )
+                    self.session.template.index(Some(s))
                 }
             }
             Response::InternalServerError {

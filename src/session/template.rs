@@ -16,7 +16,7 @@ impl Template {
             },
             index: match config.template_index {
                 Some(ref p) => read_to_string(p)?,
-                None => "{list}\n\n👁 {hosts} / {hits}".into(),
+                None => "{list}".into(),
             },
             internal_server_error: match config.template_internal_server_error {
                 Some(ref p) => read(p)?,
@@ -28,7 +28,7 @@ impl Template {
             },
             welcome: match config.template_welcome {
                 Some(ref p) => read_to_string(p)?,
-                None => "Welcome to Nexy!\n\n{list}\n\n👁 {hosts} / {hits}".into(),
+                None => "Welcome to Nexy!\n\n{list}".into(),
             },
         })
     }
@@ -37,11 +37,9 @@ impl Template {
         &self.access_denied
     }
 
-    pub fn index(&self, list: Option<&str>, hosts: Option<usize>, hits: Option<usize>) -> Vec<u8> {
+    pub fn index(&self, list: Option<&str>) -> Vec<u8> {
         self.index
             .replace("{list}", list.unwrap_or_default())
-            .replace("{hosts}", &format_count(hosts))
-            .replace("{hits}", &format_count(hits))
             .into()
     }
 
@@ -53,20 +51,9 @@ impl Template {
         &self.not_found
     }
 
-    pub fn welcome(
-        &self,
-        list: Option<&str>,
-        hosts: Option<usize>,
-        hits: Option<usize>,
-    ) -> Vec<u8> {
+    pub fn welcome(&self, list: Option<&str>) -> Vec<u8> {
         self.welcome
             .replace("{list}", list.unwrap_or_default())
-            .replace("{hosts}", &format_count(hosts))
-            .replace("{hits}", &format_count(hits))
             .into()
     }
-}
-
-fn format_count(v: Option<usize>) -> String {
-    v.map_or(String::new(), |c| c.to_string())
 }

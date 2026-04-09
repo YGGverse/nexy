@@ -21,6 +21,5 @@ pub enum Response<'a> {
     Directory {
         data: String,
         is_root: bool,
-        query: &'a str,
     },
 }

@@ -59,8 +59,6 @@ pub struct Config {
     ///
     /// **Patterns**
     /// * `{list}` - entries list for the `public` directory
-    /// * `{hosts}` - unique visitors count
-    /// * `{hits}` - requests count
     #[arg(long)]
     pub template_welcome: Option<String>,
 
@@ -70,8 +68,6 @@ pub struct Config {
     ///
     /// **Patterns**
     /// * `{list}` - entries list for the current directory
-    /// * `{hosts}` - unique visitors count
-    /// * `{hits}` - requests count
     #[arg(long)]
     pub template_index: Option<String>,
 
