@@ -34,12 +34,12 @@ impl Template {
             .into()
     }
 
-    pub fn internal_server_error(&self) -> &[u8] {
-        &self.internal_server_error
+    pub fn internal_server_error(&self) -> Vec<u8> {
+        self.internal_server_error.clone()
     }
 
-    pub fn not_found(&self) -> &[u8] {
-        &self.not_found
+    pub fn not_found(&self) -> Vec<u8> {
+        self.not_found.clone()
     }
 
     pub fn welcome(&self, list: Option<&str>) -> Vec<u8> {

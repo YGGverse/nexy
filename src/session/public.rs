@@ -3,10 +3,10 @@ mod list_config;
 use crate::response::Response;
 use anyhow::{Result, bail};
 use list_config::ListConfig;
+use log::*;
 use std::{
     collections::HashMap,
     fs::{self, Metadata},
-    io::Read,
     path::{Path, PathBuf},
     str::FromStr,
     sync::{
@@ -23,8 +23,6 @@ pub struct Public {
     list_config: ListConfig,
     /// Root path to storage
     public_dir: PathBuf,
-    /// Streaming buffer options
-    read_chunk: usize,
     /// Show hidden entries (in the directory listing)
     ///
     /// * important: this option does not prevent access to hidden files!
@@ -61,73 +59,46 @@ impl Public {
             index: RwLock::new(HashMap::new()),
             list_config: ListConfig::init(config)?,
             public_dir,
-            read_chunk: config.read_chunk,
             show_hidden: config.show_hidden,
         })
     }
 
-    pub fn request(&self, query: &str, mut callback: impl FnMut(Response) -> bool) -> bool {
+    pub fn get(&self, query: &str) -> Result<Response> {
         if self.wants_reindex() {
             self.reindex();
         }
-        let path = {
-            match self.index.read().unwrap().get(query.trim_matches('/')) {
-                Some(path) => path.clone(),
-                None => {
-                    return callback(Response::NotFound {
-                        message: format!("Request `{query}` not found in map"),
-                        path: None,
-                        query,
-                    });
-                }
-            }
-        };
-        match fs::metadata(&path) {
-            Ok(t) => match (t.is_dir(), t.is_file()) {
-                (true, _) => callback(match self.list(&path) {
-                    Ok(data) => Response::Directory {
-                        data,
-                        is_root: path == self.public_dir,
-                    },
-                    Err(e) => Response::InternalServerError {
-                        message: e.to_string(),
-                        path: Some(path),
-                        query: Some(query),
-                    },
-                }),
-                (_, true) => match fs::File::open(&path) {
-                    Ok(mut f) => loop {
-                        let mut b = vec![0; self.read_chunk];
-                        match f.read(&mut b) {
-                            Ok(0) => return true,
-                            Ok(n) => {
-                                if !callback(Response::File(&b[..n])) {
-                                    return false; // break reader on callback failure
-                                }
-                            }
-                            Err(e) => {
-                                return callback(Response::InternalServerError {
-                                    message: format!("failed to read response chunk: `{e}`"),
-                                    path: Some(path),
-                                    query: Some(query),
-                                });
-                            }
+        let q = query.trim().trim_matches('/');
+        trace!("request query resolved as `{q}`");
+        Ok(match self.index.read().unwrap().get(q) {
+            Some(path) => match fs::metadata(path) {
+                Ok(m) => {
+                    if m.is_dir() {
+                        match self.list(path) {
+                            Ok(data) => Response::Directory {
+                                data,
+                                is_root: path == &self.public_dir,
+                            },
+                            Err(e) => Response::InternalServerError {
+                                message: format!("failed to read dir: `{e}`"),
+                            },
                         }
-                    },
-                    Err(e) => callback(Response::InternalServerError {
-                        message: format!("failed to read response: `{e}`"),
-                        path: Some(path),
-                        query: Some(query),
-                    }),
+                    } else {
+                        match fs::read(path) {
+                            Ok(bytes) => Response::File(bytes),
+                            Err(e) => Response::InternalServerError {
+                                message: format!("failed to read file: `{e}`"),
+                            },
+                        }
+                    }
+                }
+                Err(e) => Response::InternalServerError {
+                    message: format!("failed to read storage: `{e}`"),
                 },
-                _ => unreachable!(), // unexpected
             },
-            Err(e) => callback(Response::InternalServerError {
-                message: format!("failed to read storage: `{e}`"),
-                path: Some(path),
-                query: Some(query),
-            }),
-        }
+            None => Response::NotFound {
+                message: format!("request `{q}` not found in map"),
+            },
+        })
     }
 
     /// Build entries list for given `path`,
@@ -321,7 +292,7 @@ impl Public {
     }
 
     fn reindex(&self) {
-        log::debug!("reindex begin...");
+        debug!("reindex begin...");
         let mut index = self.index.write().unwrap();
         index.clear();
         for e in WalkDir::new(&self.public_dir)
@@ -329,19 +300,20 @@ impl Public {
             .filter_map(|e| e.ok())
         {
             let entry = e.path();
+            trace!("index `{e:?}`...");
             if let Ok(rel_path) = entry.strip_prefix(&self.public_dir) {
-                let mut k = PathBuf::new();
+                let mut segments = PathBuf::new();
                 for part in rel_path
                     .components()
                     .filter_map(|c| PathBuf::from_str(&c.as_os_str().to_string_lossy()).ok())
                 {
-                    k.push(slug(&part))
+                    let segment = slug(&part);
+                    trace!("resolve public segment slug as `{segment}`...");
+                    segments.push(segment)
                 }
-                assert!(
-                    index
-                        .insert(k.to_string_lossy().into(), entry.to_path_buf())
-                        .is_none()
-                )
+                let uri = segments.to_string_lossy().into();
+                trace!("link public path entry as `{uri}`...");
+                assert!(index.insert(uri, entry.to_path_buf()).is_none())
             }
         }
         self.index_time.store(
@@ -351,7 +323,7 @@ impl Public {
                 .as_secs(),
             Ordering::Relaxed,
         );
-        log::debug!("reindex completed with {} entries total.", index.len())
+        debug!("reindex completed with {} entries total.", index.len())
     }
 }
 

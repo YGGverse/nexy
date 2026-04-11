@@ -33,135 +33,127 @@ impl Connection {
     }
 
     pub fn handle(mut self) {
-        let mut t = 0; // total bytes
-        match self.request() {
-            Ok(q) => {
-                trace!(
-                    "{} < {} incoming request: `{q}`",
-                    self.address.server, self.address.client
-                );
-                if self.session.clone().public.request(&q, |response| {
-                    self.response(response).is_ok_and(|sent| {
-                        t += sent;
-                        trace!(
-                            "{} > {} sent {sent} ({t} total) bytes response.",
-                            self.address.server, self.address.client
-                        );
-                        true
-                    })
-                }) {
-                    if let Some(ref a) = self.session.access_log {
-                        a.clf(&self.address.client, Some(&q), 0, t)
-                    }
-                    self.shutdown()
-                } else {
-                    if let Some(ref a) = self.session.access_log {
-                        a.clf(&self.address.client, Some(&q), 1, t)
-                    }
-                    trace!(
-                        "{} - {} connection closed by client.",
-                        self.address.server, self.address.client,
-                    )
-                }
+        fn handle_err(connection: &Connection, message: String, request: Option<&str>) -> Vec<u8> {
+            let bytes = connection.session.template.internal_server_error();
+            error!(
+                "{} > {} internal server error: `{message}`",
+                connection.address.server, connection.address.client,
+            );
+            if let Some(ref access_log) = connection.session.access_log {
+                access_log.clf(&connection.address.client, request, 1, bytes.len())
             }
-            Err(e) => match self.response(Response::InternalServerError {
-                message: format!(
-                    "{} < {} failed to handle incoming request: `{e}`",
-                    self.address.server, self.address.client
-                ),
-                path: None,
-                query: None,
-            }) {
-                Ok(sent) => {
-                    t += sent;
-                    trace!(
-                        "{} > {} sent {sent} ({t} total) bytes response.",
-                        self.address.server, self.address.client
-                    );
-                    if let Some(ref a) = self.session.access_log {
-                        a.clf(&self.address.client, None, 2, t)
-                    }
-                    self.shutdown()
-                }
-                Err(e) => {
-                    error!(
-                        "{} > {} request handle error: `{e}`",
-                        self.address.server, self.address.client
-                    );
-                    if let Some(ref a) = self.session.access_log {
-                        a.clf(&self.address.client, None, 1, t)
-                    }
-                    self.shutdown()
-                }
-            },
+            bytes
         }
-    }
-
-    fn request(&mut self) -> Result<String> {
-        let mut b = [0; 1024]; // @TODO unspecified len?
-        let n = self.stream.read(&mut b)?;
-        Ok(std::str::from_utf8(&b[..n])?.trim().to_string())
-    }
-
-    fn response(&mut self, response: Response) -> std::io::Result<usize> {
-        let data = match response {
-            Response::File(b) => b,
-            Response::Directory {
-                data: ref s,
-                is_root,
-            } => {
-                &if is_root {
-                    self.session.template.welcome(Some(s))
-                } else {
-                    self.session.template.index(Some(s))
+        let mut b = [0; 1024]; // restrict max query size (@TODO unspecified)
+        let response = match self.stream.read(&mut b) {
+            Ok(request_size) => match std::str::from_utf8(&b[..request_size]) {
+                Ok(request_string) => {
+                    trace!(
+                        "{} < {} incoming request: `{request_string}`",
+                        self.address.server, self.address.client
+                    );
+                    match self.session.public.get(request_string) {
+                        Ok(response) => match response {
+                            Response::File(bytes) => {
+                                trace!(
+                                    "{} < {} response with file.",
+                                    self.address.server, self.address.client,
+                                );
+                                if let Some(ref access_log) = self.session.access_log {
+                                    access_log.clf(
+                                        &self.address.client,
+                                        Some(request_string),
+                                        0,
+                                        bytes.len(),
+                                    )
+                                }
+                                bytes
+                            }
+                            Response::Directory {
+                                data: ref s,
+                                is_root,
+                            } => {
+                                let bytes = if is_root {
+                                    trace!(
+                                        "{} < {} response with root.",
+                                        self.address.server, self.address.client,
+                                    );
+                                    self.session.template.welcome(Some(s))
+                                } else {
+                                    trace!(
+                                        "{} < {} response with dir.",
+                                        self.address.server, self.address.client,
+                                    );
+                                    self.session.template.index(Some(s))
+                                };
+                                if let Some(ref access_log) = self.session.access_log {
+                                    access_log.clf(
+                                        &self.address.client,
+                                        Some(request_string),
+                                        0,
+                                        bytes.len(),
+                                    )
+                                }
+                                bytes
+                            }
+                            Response::NotFound { message } => {
+                                let bytes = self.session.template.not_found();
+                                debug!(
+                                    "{} < {} response object not found; reason: `{message}`.",
+                                    self.address.server, self.address.client,
+                                );
+                                if let Some(ref access_log) = self.session.access_log {
+                                    access_log.clf(
+                                        &self.address.client,
+                                        Some(request_string),
+                                        1,
+                                        bytes.len(),
+                                    )
+                                }
+                                bytes
+                            }
+                            Response::InternalServerError { message } => {
+                                handle_err(&self, message, Some(request_string))
+                            }
+                        },
+                        Err(e) => handle_err(&self, e.to_string(), Some(request_string)),
+                    }
                 }
-            }
-            Response::InternalServerError {
-                message,
-                path,
-                query,
-            } => {
-                error!(
-                    "{} > {} internal server error: `{message}` query: `{query:?}` path: `{:?}`",
-                    self.address.server,
-                    self.address.client,
-                    path.map(|p| p.to_string_lossy().to_string()),
-                );
-                self.session.template.internal_server_error()
-            }
-            Response::NotFound {
-                message,
-                path,
-                query,
-            } => {
-                error!(
-                    "{} < {} not found: `{query}` ({:?}) reason: {message}",
-                    self.address.server,
-                    self.address.client,
-                    path.map(|p| p.to_string_lossy().to_string()),
-                );
-                self.session.template.not_found()
-            }
+                Err(e) => handle_err(&self, e.to_string(), None),
+            },
+            Err(e) => handle_err(&self, e.to_string(), None),
         };
-        match self.stream.write_all(data) {
-            Ok(()) => {
-                self.stream.flush()?;
-                Ok(data.len())
-            }
-            Err(e) => {
-                // client may close the active connection unexpectedly, ignore some kinds
-                if !matches!(e.kind(), ErrorKind::BrokenPipe | ErrorKind::ConnectionReset) {
+        // send response
+        let result = self.stream.write_all(&response);
+        if result.is_ok()
+            || result.is_err_and(|e| {
+                if matches!(e.kind(), ErrorKind::BrokenPipe | ErrorKind::ConnectionReset) {
+                    true
+                } else {
                     error!(
                         "{} > {} error sending response: `{e}`",
                         self.address.server, self.address.client
-                    )
+                    );
+                    false
                 }
-                Err(e)
+            })
+        {
+            match self.stream.flush() {
+                Ok(()) => trace!(
+                    "{} > {} sent {} bytes of response.",
+                    self.address.server,
+                    self.address.client,
+                    response.len()
+                ),
+                Err(e) => trace!(
+                    "{} > {} sent {} bytes of response without flash: `{e}`.",
+                    self.address.server,
+                    self.address.client,
+                    response.len()
+                ),
             }
         }
-    }
-
-    fn shutdown(self) {
+        // try graceful shutdown
         match self.stream.shutdown(std::net::Shutdown::Both) {
             Ok(()) => trace!(
                 "{} - {} connection closed by server.",
