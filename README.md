@@ -17,7 +17,7 @@
 * [x] Build-in daily requests counter for the current session with template macro support;
 * [x] Supports the [CLF](https://en.wikipedia.org/wiki/Common_Log_Format) access log, which is compatible with analytics tools such as [GoAccess](https://goaccess.io/), [GoatCounter](https://www.goatcounter.com/) or just [htcount](https://github.com/yggverse/htcount);
 * [x] Custom templates for various server response types;
-* [ ] Soft links support (requires regex option for canonical path resolver)
+* [x] Soft links support (see `public_alias` config option)
 * [ ] Cache directory listing
 * [ ] Limit downloading speed
 * [ ] Traffic abuse protection
