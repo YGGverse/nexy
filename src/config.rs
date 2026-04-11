@@ -21,8 +21,14 @@ pub struct Config {
     pub bind: Vec<String>,
 
     /// Absolute path to the public files directory
+    /// * denies request if the absolute path resolved does not starts with
     #[arg(short, long)]
     pub public: String,
+
+    /// Absolute path to the linked aliases
+    /// * denies request if the absolute path resolved does not starts with any
+    #[arg(long)]
+    pub public_alias: Vec<String>,
 
     /// Show hidden entries (in the directory listing)
     ///

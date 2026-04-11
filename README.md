@@ -52,7 +52,10 @@ RUST_LOG=TRACE nexy -p /path/to/public_dir
           [default: 127.0.0.1:1900 [::1]:1900]
 
   -p, --public <PUBLIC>
-          Absolute path to the public files directory
+          Absolute path to the public files directory * denies request if the absolute path resolved does not starts with
+
+      --public-alias <PUBLIC_ALIAS>
+          Absolute path to the linked aliases * denies request if the absolute path resolved does not starts with any
 
       --show-hidden
           Show hidden entries (in the directory listing)
@@ -79,16 +82,14 @@ RUST_LOG=TRACE nexy -p /path/to/public_dir
 
           * this template file expects pattern and cannot be in binary format
 
-          **Patterns**
-          * `{list}` - entries list for the `public` directory
+          **Patterns** * `{list}` - entries list for the `public` directory
 
       --template-index <TEMPLATE_INDEX>
           Absolute path to the `Index` template file for each directory
 
           * this template file expects pattern and cannot be in binary format
 
-          **Patterns**
-          * `{list}` - entries list for the current directory
+          **Patterns** * `{list}` - entries list for the current directory
 
       --list-dir-show-count
           Show files count in dir (as the alternative text for navigation links)

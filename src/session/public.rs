@@ -4,6 +4,7 @@ use crate::response::Response;
 use anyhow::{Result, bail};
 use list_config::ListConfig;
 use std::{
+    collections::HashSet,
     fs::{self, Metadata},
     io::Read,
     path::PathBuf,
@@ -16,6 +17,8 @@ pub struct Public {
     list_config: ListConfig,
     /// Root path to storage, used also for the access validation
     public_dir: PathBuf,
+    /// Allowed `public_dir` symlink destinations
+    public_dir_alias: HashSet<PathBuf>,
     /// Streaming buffer options
     read_chunk: usize,
     /// Show hidden entries (in the directory listing)
@@ -27,15 +30,39 @@ pub struct Public {
 impl Public {
     pub fn init(config: &crate::config::Config) -> Result<Self> {
         let public_dir = PathBuf::from_str(&config.public)?.canonicalize()?;
-        let t = fs::metadata(&public_dir)?;
-        if !t.is_dir() {
-            bail!("Storage destination is not directory!");
+        let p = fs::metadata(&public_dir)?;
+        if !p.is_dir() {
+            bail!(
+                "`public` path `{}` is not directory!",
+                public_dir.to_string_lossy()
+            )
         }
-        if t.is_symlink() {
-            bail!("Symlinks yet not supported!");
+        if p.is_symlink() {
+            bail!(
+                "Symlink is not allowed for `public` path `{}`!",
+                public_dir.to_string_lossy()
+            )
+        }
+        let mut public_dir_alias = HashSet::with_capacity(config.public_alias.len());
+        for alias in &config.public_alias {
+            let a = fs::metadata(alias)?;
+            if !a.is_dir() {
+                bail!(
+                    "`public_alias` path `{}` is not directory!",
+                    public_dir.to_string_lossy()
+                )
+            }
+            if a.is_symlink() {
+                bail!(
+                    "Symlink is not allowed for `public_alias` path `{}`!",
+                    public_dir.to_string_lossy()
+                )
+            }
+            assert!(public_dir_alias.insert(PathBuf::from_str(alias)?.canonicalize()?))
         }
         Ok(Self {
             list_config: ListConfig::init(config)?,
+            public_dir_alias,
             public_dir,
             read_chunk: config.read_chunk,
             show_hidden: config.show_hidden,
@@ -44,12 +71,17 @@ impl Public {
 
     pub fn request(&self, query: &str, mut callback: impl FnMut(Response) -> bool) -> bool {
         let path = {
-            // access restriction zone, change carefully!
+            // traversal access restriction, change carefully!
             let mut path = PathBuf::from(&self.public_dir);
             path.push(query.trim_matches('/'));
             match path.canonicalize() {
                 Ok(canonical) => {
-                    if !canonical.starts_with(&self.public_dir) {
+                    if !canonical.starts_with(&self.public_dir)
+                        && !self
+                            .public_dir_alias
+                            .iter()
+                            .any(|alias| canonical.starts_with(alias))
+                    {
                         return callback(Response::AccessDenied {
                             canonical,
                             path,
@@ -161,8 +193,8 @@ impl Public {
                 continue;
             }
             let meta = fs::metadata(e.path())?;
-            match (meta.is_dir(), meta.is_file()) {
-                (true, _) => dirs.push(Dir {
+            if meta.is_dir() {
+                dirs.push(Dir {
                     meta,
                     name,
                     count: fs::read_dir(e.path()).map_or(0, |i| {
@@ -173,9 +205,9 @@ impl Public {
                             })
                             .count()
                     }),
-                }),
-                (_, true) => files.push(File { meta, name }),
-                _ => continue, // @TODO symlinks support?
+                })
+            } else {
+                files.push(File { meta, name })
             }
         }
         // build resulting list
