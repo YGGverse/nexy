@@ -303,16 +303,17 @@ impl Public {
             trace!("index `{e:?}`...");
             if let Ok(rel_path) = entry.strip_prefix(&self.public_dir) {
                 let mut segments = PathBuf::new();
-                for part in rel_path
+                for (i, part) in rel_path
                     .components()
                     .filter_map(|c| PathBuf::from_str(&c.as_os_str().to_string_lossy()).ok())
+                    .enumerate()
                 {
                     let segment = slug(&part);
-                    trace!("resolve public segment slug as `{segment}`...");
+                    trace!("slug {} segment as `{segment}`...", i + 1);
                     segments.push(segment)
                 }
                 let uri = segments.to_string_lossy().into();
-                trace!("link public path entry as `{uri}`...");
+                trace!("link public entry to `{uri}`.");
                 assert!(index.insert(uri, entry.to_path_buf()).is_none())
             }
         }
