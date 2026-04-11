@@ -351,7 +351,7 @@ impl Public {
                 .as_secs(),
             Ordering::Relaxed,
         );
-        log::debug!("reindex completed.")
+        log::debug!("reindex completed with {} entries total.", index.len())
     }
 }
 
