@@ -34,7 +34,7 @@
 > For more examples, visit the project [Wiki](https://github.com/YGGverse/nexy/wiki)
 
 ``` bash
-RUST_LOG=DEBUG nexy -p /path/to/public_dir
+RUST_LOG=TRACE nexy -p /path/to/public_dir
 ```
 * by default, server starts on localhost; change it with the `--bind` option(s)
 
