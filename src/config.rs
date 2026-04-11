@@ -149,6 +149,10 @@ pub struct Config {
     #[arg(long, default_value_t = String::from("%Y/%m/%d"))]
     pub list_time_format: String,
 
+    /// Timeout to update `public` dir index, in seconds
+    #[arg(long, default_value_t = 60)]
+    pub list_index_update: u64,
+
     /// Optimize memory usage on reading large files or stream
     #[arg(short, long, default_value_t = 1024)]
     pub read_chunk: usize,

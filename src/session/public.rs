@@ -1,4 +1,5 @@
 mod list_config;
+
 use crate::response::Response;
 use anyhow::{Result, bail};
 use list_config::ListConfig;
@@ -8,6 +9,11 @@ use std::{
     io::Read,
     path::{Path, PathBuf},
     str::FromStr,
+    sync::{
+        RwLock,
+        atomic::{AtomicU64, Ordering},
+    },
+    time::{SystemTime, UNIX_EPOCH},
 };
 use walkdir::WalkDir;
 
@@ -23,6 +29,14 @@ pub struct Public {
     ///
     /// * important: this option does not prevent access to hidden files!
     show_hidden: bool,
+    // This server supports auto-slug aliasing
+    // it allows to simply present UTF-8 filenames in the directory index, according to the Nex protocol specification;
+    // as the slug conversion is unrecoverable, rebuild hash map for all entries in the public dir (yep, for each request).
+    // * this method implements traversal access restriction, change carefully!
+    // * it could be optional @TODO
+    index: RwLock<HashMap<String, PathBuf>>,
+    index_time: AtomicU64,
+    index_update: u64,
 }
 
 impl Public {
@@ -42,6 +56,9 @@ impl Public {
             )
         }
         Ok(Self {
+            index_time: 0.into(),
+            index_update: config.list_index_update,
+            index: RwLock::new(HashMap::new()),
             list_config: ListConfig::init(config)?,
             public_dir,
             read_chunk: config.read_chunk,
@@ -50,35 +67,11 @@ impl Public {
     }
 
     pub fn request(&self, query: &str, mut callback: impl FnMut(Response) -> bool) -> bool {
+        if self.wants_reindex() {
+            self.reindex();
+        }
         let path = {
-            // This server supports auto-slug aliasing
-            // it allows to simply present UTF-8 filenames in the directory index, according to the Nex protocol specification;
-            // as the slug conversion is unrecoverable, rebuild hash map for all entries in the public dir (yep, for each request).
-            // * this method implements traversal access restriction, change carefully!
-            // * it could be cached as expensive @TODO
-            // * it could be optional @TODO
-            let mut aliases: HashMap<String, PathBuf> = HashMap::new();
-            for e in WalkDir::new(&self.public_dir)
-                .into_iter()
-                .filter_map(|e| e.ok())
-            {
-                let entry = e.path();
-                if let Ok(rel_path) = entry.strip_prefix(&self.public_dir) {
-                    let mut alias = PathBuf::new();
-                    for part in rel_path
-                        .components()
-                        .filter_map(|c| PathBuf::from_str(&c.as_os_str().to_string_lossy()).ok())
-                    {
-                        alias.push(slug(&part))
-                    }
-                    assert!(
-                        aliases
-                            .insert(alias.to_string_lossy().into(), entry.to_path_buf())
-                            .is_none()
-                    )
-                }
-            }
-            match aliases.get(query.trim_matches('/')) {
+            match self.index.read().unwrap().get(query.trim_matches('/')) {
                 Some(path) => path.clone(),
                 None => {
                     return callback(Response::NotFound {
@@ -127,7 +120,7 @@ impl Public {
                         query: Some(query),
                     }),
                 },
-                _ => panic!(), // unexpected
+                _ => unreachable!(), // unexpected
             },
             Err(e) => callback(Response::InternalServerError {
                 message: format!("failed to read storage: `{e}`"),
@@ -316,6 +309,49 @@ impl Public {
             .unwrap()
             .format(&self.list_config.time_format)
             .to_string()
+    }
+
+    fn wants_reindex(&self) -> bool {
+        let last_index_time = self.index_time.load(Ordering::Relaxed);
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs();
+        now.saturating_sub(last_index_time) >= self.index_update
+    }
+
+    fn reindex(&self) {
+        log::debug!("reindex begin...");
+        let mut index = self.index.write().unwrap();
+        index.clear();
+        for e in WalkDir::new(&self.public_dir)
+            .into_iter()
+            .filter_map(|e| e.ok())
+        {
+            let entry = e.path();
+            if let Ok(rel_path) = entry.strip_prefix(&self.public_dir) {
+                let mut k = PathBuf::new();
+                for part in rel_path
+                    .components()
+                    .filter_map(|c| PathBuf::from_str(&c.as_os_str().to_string_lossy()).ok())
+                {
+                    k.push(slug(&part))
+                }
+                assert!(
+                    index
+                        .insert(k.to_string_lossy().into(), entry.to_path_buf())
+                        .is_none()
+                )
+            }
+        }
+        self.index_time.store(
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_secs(),
+            Ordering::Relaxed,
+        );
+        log::debug!("reindex completed.")
     }
 }
 
