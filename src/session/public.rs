@@ -31,7 +31,7 @@ pub struct Public {
     show_hidden: bool,
     // This server supports auto-slug aliasing
     // it allows to simply present UTF-8 filenames in the directory index, according to the Nex protocol specification;
-    // as the slug conversion is unrecoverable, rebuild hash map for all entries in the public dir (yep, for each request).
+    // as the slug conversion is unrecoverable, rebuild hash map for all entries in the public dir.
     // * this method implements traversal access restriction, change carefully!
     // * it could be optional @TODO
     index: RwLock<HashMap<String, PathBuf>>,
