@@ -296,6 +296,7 @@ impl Public {
         let mut index = self.index.write().unwrap();
         index.clear();
         for e in WalkDir::new(&self.public_dir)
+            .follow_links(true)
             .into_iter()
             .filter_map(|e| e.ok())
         {
