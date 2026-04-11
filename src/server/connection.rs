@@ -36,15 +36,15 @@ impl Connection {
         let mut t = 0; // total bytes
         match self.request() {
             Ok(q) => {
-                debug!(
-                    "[{}] < [{}] incoming request: `{q}`",
+                trace!(
+                    "{} < {} incoming request: `{q}`",
                     self.address.server, self.address.client
                 );
                 if self.session.clone().public.request(&q, |response| {
                     self.response(response).is_ok_and(|sent| {
                         t += sent;
-                        debug!(
-                            "[{}] > [{}] sent {sent} ({t} total) bytes response.",
+                        trace!(
+                            "{} > {} sent {sent} ({t} total) bytes response.",
                             self.address.server, self.address.client
                         );
                         true
@@ -58,15 +58,15 @@ impl Connection {
                     if let Some(ref a) = self.session.access_log {
                         a.clf(&self.address.client, Some(&q), 1, t)
                     }
-                    debug!(
-                        "[{}] - [{}] connection closed by client.",
+                    trace!(
+                        "{} - {} connection closed by client.",
                         self.address.server, self.address.client,
                     )
                 }
             }
             Err(e) => match self.response(Response::InternalServerError {
                 message: format!(
-                    "[{}] < [{}] failed to handle incoming request: `{e}`",
+                    "{} < {} failed to handle incoming request: `{e}`",
                     self.address.server, self.address.client
                 ),
                 path: None,
@@ -74,8 +74,8 @@ impl Connection {
             }) {
                 Ok(sent) => {
                     t += sent;
-                    debug!(
-                        "[{}] > [{}] sent {sent} ({t} total) bytes response.",
+                    trace!(
+                        "{} > {} sent {sent} ({t} total) bytes response.",
                         self.address.server, self.address.client
                     );
                     if let Some(ref a) = self.session.access_log {
@@ -85,7 +85,7 @@ impl Connection {
                 }
                 Err(e) => {
                     error!(
-                        "[{}] > [{}] request handle error: `{e}`",
+                        "{} > {} request handle error: `{e}`",
                         self.address.server, self.address.client
                     );
                     if let Some(ref a) = self.session.access_log {
@@ -122,7 +122,7 @@ impl Connection {
                 query,
             } => {
                 error!(
-                    "[{}] > [{}] internal server error: `{message}` query: `{query:?}` path: `{:?}`",
+                    "{} > {} internal server error: `{message}` query: `{query:?}` path: `{:?}`",
                     self.address.server,
                     self.address.client,
                     path.map(|p| p.to_string_lossy().to_string()),
@@ -135,7 +135,7 @@ impl Connection {
                 query,
             } => {
                 error!(
-                    "[{}] < [{}] access denied: `{query}` (original: `{}` / canonical: `{}`)",
+                    "{} < {} access denied: `{query}` (original: {} / canonical: {})",
                     self.address.server,
                     self.address.client,
                     path.to_string_lossy(),
@@ -149,7 +149,7 @@ impl Connection {
                 query,
             } => {
                 error!(
-                    "[{}] < [{}] not found: `{query}` (`{}`) reason: {message}",
+                    "{} < {} not found: `{query}` ({}) reason: {message}",
                     self.address.server,
                     self.address.client,
                     path.to_string_lossy()
@@ -166,7 +166,7 @@ impl Connection {
                 // client may close the active connection unexpectedly, ignore some kinds
                 if !matches!(e.kind(), ErrorKind::BrokenPipe | ErrorKind::ConnectionReset) {
                     error!(
-                        "[{}] > [{}] error sending response: `{e}`",
+                        "{} > {} error sending response: `{e}`",
                         self.address.server, self.address.client
                     )
                 }
@@ -177,12 +177,12 @@ impl Connection {
 
     fn shutdown(self) {
         match self.stream.shutdown(std::net::Shutdown::Both) {
-            Ok(()) => debug!(
-                "[{}] - [{}] connection closed by server.",
+            Ok(()) => trace!(
+                "{} - {} connection closed by server.",
                 self.address.server, self.address.client,
             ),
             Err(e) => warn!(
-                "[{}] > [{}] failed to close connection: `{e}`",
+                "{} > {} failed to close connection: `{e}`",
                 self.address.server, self.address.client,
             ),
         }
