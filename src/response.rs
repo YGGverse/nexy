@@ -2,11 +2,6 @@ use std::path::PathBuf;
 
 /// Internal server response types
 pub enum Response<'a> {
-    AccessDenied {
-        canonical: PathBuf,
-        path: PathBuf,
-        query: &'a str,
-    },
     InternalServerError {
         message: String,
         path: Option<PathBuf>,
@@ -14,7 +9,7 @@ pub enum Response<'a> {
     },
     NotFound {
         message: String,
-        path: PathBuf,
+        path: Option<PathBuf>,
         query: &'a str,
     },
     File(&'a [u8]),

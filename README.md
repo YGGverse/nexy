@@ -17,10 +17,7 @@
 * [x] Build-in daily requests counter for the current session with template macro support;
 * [x] Supports the [CLF](https://en.wikipedia.org/wiki/Common_Log_Format) access log, which is compatible with analytics tools such as [GoAccess](https://goaccess.io/), [GoatCounter](https://www.goatcounter.com/) or just [htcount](https://github.com/yggverse/htcount);
 * [x] Custom templates for various server response types;
-* [x] Soft links support (see `public_alias` config option)
-* [ ] Cache directory listing
-* [ ] Limit downloading speed
-* [ ] Traffic abuse protection
+* [x] UTF-8 auto-slugs for directory index
 
 ## Install
 
@@ -41,133 +38,7 @@ RUST_LOG=TRACE nexy -p /path/to/public_dir
 ### Options
 
 ``` bash
-  -a, --access-log <ACCESS_LOG>
-          Absolute path to the access log file
-
-  -b, --bind <BIND>
-          Bind server(s) `host:port` to listen incoming connections
-
-          * use `[host]:port` notation for IPv6
-
-          [default: 127.0.0.1:1900 [::1]:1900]
-
-  -p, --public <PUBLIC>
-          Absolute path to the public files directory * denies request if the absolute path resolved does not starts with
-
-      --public-alias <PUBLIC_ALIAS>
-          Absolute path to the linked aliases * denies request if the absolute path resolved does not starts with any
-
-      --show-hidden
-          Show hidden entries (in the directory listing)
-
-          * Important: this option does not prevent access to hidden files!
-
-      --template-access-denied <TEMPLATE_ACCESS_DENIED>
-          Absolute path to the `Access denied` template file
-
-          * this template file can be in binary format (e.g. image)
-
-      --template-internal-server-error <TEMPLATE_INTERNAL_SERVER_ERROR>
-          Absolute path to the `Internal server error` template file
-
-          * this template file can be in binary format (e.g. image)
-
-      --template-not-found <TEMPLATE_NOT_FOUND>
-          Absolute path to the `Not found` template file
-
-          * this template file can be in binary format (e.g. image)
-
-      --template-welcome <TEMPLATE_WELCOME>
-          Absolute path to the `Welcome` template file. Unlike `template-index`, this applies only to the `public` location
-
-          * this template file expects pattern and cannot be in binary format
-
-          **Patterns** * `{list}` - entries list for the `public` directory
-
-      --template-index <TEMPLATE_INDEX>
-          Absolute path to the `Index` template file for each directory
-
-          * this template file expects pattern and cannot be in binary format
-
-          **Patterns** * `{list}` - entries list for the current directory
-
-      --list-dir-show-count
-          Show files count in dir (as the alternative text for navigation links)
-
-      --list-dir-show-accessed
-          Show directory accessed time
-
-      --list-dir-show-created
-          Show directory created time
-
-      --list-dir-show-modified
-          Show directory modified time
-
-      --list-dir-sort-by-accessed
-          Sort dirs by time accessed (name by default)
-
-      --list-dir-sort-by-created
-          Sort dirs by time created (name by default)
-
-      --list-dir-sort-by-modified
-          Sort dirs by time modified (name by default)
-
-      --list-dir-sort-by-count
-          Sort dirs by count (name by default)
-
-      --list-dir-reverse
-          Sort directories in list DESC (ASC by default)
-
-      --list-file-show-size
-          Show file size in list (as the alternative text for navigation links)
-
-      --list-file-show-accessed
-          Show file accessed time
-
-      --list-file-show-created
-          Show file created time
-
-      --list-file-show-modified
-          Show file modified time
-
-      --list-file-sort-by-accessed
-          Sort files by time accessed (name by default)
-
-      --list-file-sort-by-created
-          Sort files by time created (name by default)
-
-      --list-file-sort-by-modified
-          Sort files by time modified (name by default)
-
-      --list-file-sort-by-size
-          Sort files by size (name by default)
-
-      --list-file-reverse
-          Sort files in list DESC (ASC by default)
-
-      --list-file-slash <LIST_FILE_SLASH>
-          Append trailing slash to files match regex pattern(s)
-
-      --list-time-format <LIST_TIME_FORMAT>
-          Time format for listing items
-
-          * use escape notation for `%` e.g. `"%%Y-%%m-%%d %%H:%%M:%%S"`
-
-          [default: %Y/%m/%d]
-
-      --list-url-encode <LIST_URL_ENCODE>
-          Encode listing URL match regex pattern (use `.*` for all entries)
-
-  -r, --read-chunk <READ_CHUNK>
-          Optimize memory usage on reading large files or stream
-
-          [default: 1024]
-
-  -h, --help
-          Print help (see a summary with '-h')
-
-  -V, --version
-          Print version
+nexy --help
 ```
 
 ## See also

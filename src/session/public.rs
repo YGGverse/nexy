@@ -1,24 +1,22 @@
 mod list_config;
-
 use crate::response::Response;
 use anyhow::{Result, bail};
 use list_config::ListConfig;
 use std::{
-    collections::HashSet,
+    collections::HashMap,
     fs::{self, Metadata},
     io::Read,
-    path::PathBuf,
+    path::{Path, PathBuf},
     str::FromStr,
 };
+use walkdir::WalkDir;
 
 /// In-session disk storage API
 pub struct Public {
     /// Listing options
     list_config: ListConfig,
-    /// Root path to storage, used also for the access validation
+    /// Root path to storage
     public_dir: PathBuf,
-    /// Allowed `public_dir` symlink destinations
-    public_dir_alias: HashSet<PathBuf>,
     /// Streaming buffer options
     read_chunk: usize,
     /// Show hidden entries (in the directory listing)
@@ -43,26 +41,8 @@ impl Public {
                 public_dir.to_string_lossy()
             )
         }
-        let mut public_dir_alias = HashSet::with_capacity(config.public_alias.len());
-        for alias in &config.public_alias {
-            let a = fs::metadata(alias)?;
-            if !a.is_dir() {
-                bail!(
-                    "`public_alias` path `{}` is not directory!",
-                    public_dir.to_string_lossy()
-                )
-            }
-            if a.is_symlink() {
-                bail!(
-                    "Symlink is not allowed for `public_alias` path `{}`!",
-                    public_dir.to_string_lossy()
-                )
-            }
-            assert!(public_dir_alias.insert(PathBuf::from_str(alias)?.canonicalize()?))
-        }
         Ok(Self {
             list_config: ListConfig::init(config)?,
-            public_dir_alias,
             public_dir,
             read_chunk: config.read_chunk,
             show_hidden: config.show_hidden,
@@ -71,29 +51,39 @@ impl Public {
 
     pub fn request(&self, query: &str, mut callback: impl FnMut(Response) -> bool) -> bool {
         let path = {
-            // traversal access restriction, change carefully!
-            let mut path = PathBuf::from(&self.public_dir);
-            path.push(query.trim_matches('/'));
-            match path.canonicalize() {
-                Ok(canonical) => {
-                    if !canonical.starts_with(&self.public_dir)
-                        && !self
-                            .public_dir_alias
-                            .iter()
-                            .any(|alias| canonical.starts_with(alias))
+            // This server supports auto-slug aliasing
+            // it allows to simply present UTF-8 filenames in the directory index, according to the Nex protocol specification;
+            // as the slug conversion is unrecoverable, rebuild hash map for all entries in the public dir (yep, for each request).
+            // * this method implements traversal access restriction, change carefully!
+            // * it could be cached as expensive @TODO
+            // * it could be optional @TODO
+            let mut aliases: HashMap<String, PathBuf> = HashMap::new();
+            for e in WalkDir::new(&self.public_dir)
+                .into_iter()
+                .filter_map(|e| e.ok())
+            {
+                let entry = e.path();
+                if let Ok(rel_path) = entry.strip_prefix(&self.public_dir) {
+                    let mut alias = PathBuf::new();
+                    for part in rel_path
+                        .components()
+                        .filter_map(|c| PathBuf::from_str(&c.as_os_str().to_string_lossy()).ok())
                     {
-                        return callback(Response::AccessDenied {
-                            canonical,
-                            path,
-                            query,
-                        });
+                        alias.push(slug(&part))
                     }
-                    canonical
+                    assert!(
+                        aliases
+                            .insert(alias.to_string_lossy().into(), entry.to_path_buf())
+                            .is_none()
+                    )
                 }
-                Err(e) => {
+            }
+            match aliases.get(query.trim_matches('/')) {
+                Some(path) => path.clone(),
+                None => {
                     return callback(Response::NotFound {
-                        message: e.to_string(),
-                        path,
+                        message: format!("Request `{query}` not found in map"),
+                        path: None,
                         query,
                     });
                 }
@@ -153,7 +143,6 @@ impl Public {
     /// * make sure the `path` is allowed before call this method!
     fn list(&self, path: &PathBuf) -> Result<String> {
         use std::os::unix::fs::MetadataExt; // @TODO
-        use urlencoding::encode;
         /// Format bytes
         fn b(v: u64) -> String {
             const KB: f32 = 1024.0;
@@ -175,12 +164,12 @@ impl Public {
             /// Items quantity in this directory
             count: usize,
             meta: Metadata,
-            name: String,
+            path: PathBuf,
         }
         /// Formatted file entry
         struct File {
             meta: Metadata,
-            name: String,
+            path: PathBuf,
         }
         // separate dirs from files, to show the dirs first
         const C: usize = 25; // @TODO optional
@@ -192,12 +181,11 @@ impl Public {
             if !self.show_hidden && name.starts_with('.') {
                 continue;
             }
-            let meta = fs::metadata(e.path())?;
+            let path = e.path();
+            let meta = fs::metadata(&path)?;
             if meta.is_dir() {
                 dirs.push(Dir {
-                    meta,
-                    name,
-                    count: fs::read_dir(e.path()).map_or(0, |i| {
+                    count: fs::read_dir(&path).map_or(0, |i| {
                         i.filter_map(Result::ok)
                             .filter(|e| {
                                 self.show_hidden
@@ -205,9 +193,11 @@ impl Public {
                             })
                             .count()
                     }),
+                    meta,
+                    path,
                 })
             } else {
-                files.push(File { meta, name })
+                files.push(File { meta, path })
             }
         }
         // build resulting list
@@ -228,7 +218,7 @@ impl Public {
             } else if dc.sort.is_count {
                 a.meta.size().cmp(&b.meta.size())
             } else {
-                a.name.cmp(&b.name)
+                a.path.cmp(&b.path)
             }
         });
         if dc.is_reverse {
@@ -236,19 +226,13 @@ impl Public {
         }
         for dir in dirs {
             r.push({
-                let mut l = format!(
-                    "=> {}/",
-                    self.list_config
-                        .list_url_encode
-                        .as_ref()
-                        .and_then(|r| if r.is_match(&dir.name) {
-                            Some(encode(&dir.name).to_string())
-                        } else {
-                            None
-                        })
-                        .unwrap_or(dir.name)
-                ); // link
-                let mut a = Vec::new(); // alt
+                let n = file_name(&dir.path);
+                let s = slug(&dir.path);
+                let mut l = format!("=> {}/", slug(&dir.path)); // link
+                let mut a = Vec::with_capacity(5); // alt
+                if s != n {
+                    a.push(n)
+                }
                 if dc.alt.time.is_accessed {
                     a.push(self.t(dir.meta.atime()))
                 }
@@ -281,7 +265,7 @@ impl Public {
             } else if fc.sort.is_size {
                 a.meta.size().cmp(&b.meta.size())
             } else {
-                a.name.cmp(&b.name)
+                a.path.cmp(&b.path)
             }
         });
         if fc.is_reverse {
@@ -289,19 +273,13 @@ impl Public {
         }
         for file in files {
             r.push({
-                let mut l = format!(
-                    "=> {}",
-                    self.list_config
-                        .list_url_encode
-                        .as_ref()
-                        .and_then(|r| if r.is_match(&file.name) {
-                            Some(encode(&file.name).to_string())
-                        } else {
-                            None
-                        })
-                        .unwrap_or(file.name)
-                ); // link
-                let mut a = Vec::new(); // alt
+                let n = file_name(&file.path);
+                let s = slug(&file.path);
+                let mut l = format!("=> {}", slug(&file.path)); // link
+                let mut a = Vec::with_capacity(5); // alt
+                if s != n {
+                    a.push(n)
+                }
                 if fc.alt.time.is_accessed {
                     a.push(self.t(file.meta.atime()))
                 }
@@ -338,5 +316,27 @@ impl Public {
             .unwrap()
             .format(&self.list_config.time_format)
             .to_string()
+    }
+}
+
+fn slug(path: &Path) -> String {
+    use slug::slugify;
+    match path.file_stem() {
+        Some(file_stem) => match path.extension() {
+            Some(extension) => format!(
+                "{}.{}",
+                slugify(file_stem.to_string_lossy()),
+                extension.to_string_lossy()
+            ),
+            None => slugify(file_stem.to_string_lossy()),
+        },
+        None => file_name(path),
+    }
+}
+
+fn file_name(path: &Path) -> String {
+    match path.file_name() {
+        Some(file_name) => file_name.to_string_lossy().into(),
+        None => "../".into(),
     }
 }

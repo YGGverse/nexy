@@ -100,7 +100,7 @@ impl Connection {
     fn request(&mut self) -> Result<String> {
         let mut b = [0; 1024]; // @TODO unspecified len?
         let n = self.stream.read(&mut b)?;
-        Ok(urlencoding::decode(std::str::from_utf8(&b[..n])?.trim())?.to_string())
+        Ok(std::str::from_utf8(&b[..n])?.trim().to_string())
     }
 
     fn response(&mut self, response: Response) -> std::io::Result<usize> {
@@ -129,30 +129,16 @@ impl Connection {
                 );
                 self.session.template.internal_server_error()
             }
-            Response::AccessDenied {
-                canonical,
-                path,
-                query,
-            } => {
-                error!(
-                    "{} < {} access denied: `{query}` (original: {} / canonical: {})",
-                    self.address.server,
-                    self.address.client,
-                    path.to_string_lossy(),
-                    canonical.to_string_lossy()
-                );
-                self.session.template.access_denied()
-            }
             Response::NotFound {
                 message,
                 path,
                 query,
             } => {
                 error!(
-                    "{} < {} not found: `{query}` ({}) reason: {message}",
+                    "{} < {} not found: `{query}` ({:?}) reason: {message}",
                     self.address.server,
                     self.address.client,
-                    path.to_string_lossy()
+                    path.map(|p| p.to_string_lossy().to_string()),
                 );
                 self.session.template.not_found()
             }

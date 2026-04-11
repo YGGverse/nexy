@@ -46,7 +46,6 @@ pub struct ListConfig {
     pub dir: Dir,
     pub file: File,
     pub time_format: String,
-    pub list_url_encode: Option<Regex>,
 }
 
 impl ListConfig {
@@ -124,10 +123,6 @@ impl ListConfig {
                 },
             },
             time_format: config.list_time_format.clone(),
-            list_url_encode: config
-                .list_url_encode
-                .as_ref()
-                .map(|p| Regex::new(p).unwrap()),
         })
     }
 }

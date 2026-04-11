@@ -1,5 +1,4 @@
 pub struct Template {
-    access_denied: Vec<u8>,
     internal_server_error: Vec<u8>,
     not_found: Vec<u8>,
     pub index: String,
@@ -10,10 +9,6 @@ impl Template {
     pub fn init(config: &crate::config::Config) -> anyhow::Result<Self> {
         use std::fs::{read, read_to_string};
         Ok(Self {
-            access_denied: match config.template_access_denied {
-                Some(ref p) => read(p)?,
-                None => "Access denied".into(),
-            },
             index: match config.template_index {
                 Some(ref p) => read_to_string(p)?,
                 None => "{list}".into(),
@@ -31,10 +26,6 @@ impl Template {
                 None => "Welcome to Nexy!\n\n{list}".into(),
             },
         })
-    }
-
-    pub fn access_denied(&self) -> &[u8] {
-        &self.access_denied
     }
 
     pub fn index(&self, list: Option<&str>) -> Vec<u8> {

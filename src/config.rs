@@ -21,14 +21,8 @@ pub struct Config {
     pub bind: Vec<String>,
 
     /// Absolute path to the public files directory
-    /// * denies request if the absolute path resolved does not starts with
     #[arg(short, long)]
     pub public: String,
-
-    /// Absolute path to the linked aliases
-    /// * denies request if the absolute path resolved does not starts with any
-    #[arg(long)]
-    pub public_alias: Vec<String>,
 
     /// Show hidden entries (in the directory listing)
     ///
@@ -154,10 +148,6 @@ pub struct Config {
     /// * use escape notation for `%` e.g. `"%%Y-%%m-%%d %%H:%%M:%%S"`
     #[arg(long, default_value_t = String::from("%Y/%m/%d"))]
     pub list_time_format: String,
-
-    /// Encode listing URL match regex pattern (use `.*` for all entries)
-    #[arg(long)]
-    pub list_url_encode: Option<String>,
 
     /// Optimize memory usage on reading large files or stream
     #[arg(short, long, default_value_t = 1024)]
