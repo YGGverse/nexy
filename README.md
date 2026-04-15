@@ -40,6 +40,12 @@ RUST_LOG=TRACE nexy -p /path/to/public_dir
 nexy --help
 ```
 
+## Live
+
+* `nex://[202:68d0:f0d5:b88d:1d1a:555e:2f6b:3148]/` - [Yggdrasil](https://yggdrasil-network.github.io)
+* `nex://[505:6847:c778:61a1:5c6d:e802:d291:8191]/` - [Mycelium](https://github.com/threefoldtech/mycelium)
+* `nex://sl5ddrkufwd37xbbf4bj7542qljtnwe6pzd54epqg6zfytkj7q5a.b32.i2p/`
+
 ## See also
 
 * [Yoda](https://github.com/YGGverse/Yoda) - Client for the Gemini & Nex protocols, written in Rust
